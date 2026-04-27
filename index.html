@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thales — Coiffeur Barbier</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#c9a96e;--dark:#0d0d0d}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:#0d0d0d;color:#fff;overflow-x:hidden}
+
+.cursor{width:8px;height:8px;background:var(--gold);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+.cursor-ring{width:36px;height:36px;border:1px solid rgba(201,169,110,.4);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .2s,height .2s,opacity .2s}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.2rem 2.5rem;display:flex;justify-content:space-between;align-items:center;transition:background .4s}
+nav.scrolled{background:rgba(13,13,13,.88);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06)}
+.logo{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;letter-spacing:.25em;text-transform:uppercase;font-style:italic}
+.logo em{color:var(--gold);font-style:normal}
+nav ul{list-style:none;display:flex;gap:2rem;align-items:center}
+nav ul li{font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;color:rgba(255,255,255,.5);transition:color .3s}
+nav ul li:hover{color:#fff}
+.nav-account{background:rgba(201,169,110,.12);border:1px solid rgba(201,169,110,.3);color:var(--gold)!important;padding:.4rem 1rem;border-radius:1px;transition:all .3s!important}
+.nav-account:hover{background:rgba(201,169,110,.2)!important}
+
+/* PAGES */
+.page{display:none!important}
+.page.on{display:block!important}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;text-align:center;padding:2rem}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 60% 40%,rgba(201,169,110,.12) 0%,transparent 65%),radial-gradient(ellipse at 20% 80%,rgba(201,169,110,.07) 0%,transparent 50%)}
+.hero-lines{position:absolute;inset:0;overflow:hidden}
+.hero-lines span{position:absolute;width:1px;background:linear-gradient(to bottom,transparent,rgba(201,169,110,.15),transparent);animation:lineFloat 8s ease-in-out infinite}
+.hero-lines span:nth-child(1){left:20%;height:60%;top:20%}
+.hero-lines span:nth-child(2){left:50%;height:40%;top:30%;animation-delay:2s}
+.hero-lines span:nth-child(3){left:80%;height:50%;top:15%;animation-delay:4s}
+@keyframes lineFloat{0%,100%{opacity:0;transform:scaleY(.5)}50%{opacity:1;transform:scaleY(1)}}
+.hero-tag{font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:2rem;opacity:0;animation:fadeUp .8s .3s forwards}
+.hero-h1{font-family:'Cormorant Garamond',serif;font-size:clamp(4rem,12vw,9rem);font-weight:300;letter-spacing:.15em;text-transform:uppercase;line-height:.9;opacity:0;animation:fadeUp .8s .5s forwards;font-style:italic}
+.hero-h1 em{color:var(--gold);font-style:normal}
+.hero-sub{font-size:.78rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:1.5rem;margin-bottom:3rem;opacity:0;animation:fadeUp .8s .7s forwards}
+.btn-hero{display:inline-flex;align-items:center;background:transparent;border:1px solid rgba(201,169,110,.5);color:var(--gold);padding:1rem 2.5rem;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border-radius:1px;transition:all .4s;opacity:0;animation:fadeUp .8s .9s forwards;position:relative;overflow:hidden}
+.btn-hero::before{content:'';position:absolute;inset:0;background:var(--gold);transform:translateX(-100%);transition:transform .4s;z-index:0}
+.btn-hero:hover::before{transform:translateX(0)}
+.btn-hero:hover{color:#111}
+.btn-hero span{position:relative;z-index:1}
+.scroll-ind{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;opacity:0;animation:fadeIn 1s 1.5s forwards}
+.scroll-ind div{width:1px;height:50px;background:linear-gradient(to bottom,var(--gold),transparent);animation:scrollLine 2s ease-in-out infinite}
+.scroll-ind span{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+@keyframes scrollLine{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+.divider{display:flex;align-items:center;gap:1.5rem;padding:0 3rem;margin:1rem 0}
+.divider-line{flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(201,169,110,.2),transparent)}
+.divider-icon{color:var(--gold);font-size:.8rem}
+
+/* SECTIONS */
+.section{padding:7rem 3rem}
+.sec-label{font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem;text-align:center}
+.sec-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(2.5rem,5vw,4rem);font-weight:300;text-align:center;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4rem;font-style:italic}
+
+/* PRESTATIONS */
+.presta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.06);max-width:900px;margin:0 auto}
+.pcard{background:#0d0d0d;padding:3.5rem 2.5rem;text-align:center;cursor:pointer;position:relative;overflow:hidden;transition:background .4s;display:flex;flex-direction:column;align-items:center}
+.pcard::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,169,110,.08),transparent);opacity:0;transition:opacity .4s}
+.pcard:hover{background:#111}
+.pcard:hover::before{opacity:1}
+.pcard-icon{font-size:1.5rem;margin-bottom:1.5rem}
+.pcard h3{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1rem}
+.pcard-line{width:30px;height:1px;background:var(--gold);margin:.5rem auto 0;opacity:.4;transition:width .4s,opacity .4s}
+.pcard:hover .pcard-line{width:60px;opacity:1}
+.pcard .price{font-size:2.8rem;font-weight:300;color:var(--gold);font-family:'Cormorant Garamond',serif;margin-top:auto;padding-top:1.5rem}
+.pcard .price sup{font-size:1.2rem}
+.pcard p{font-size:.75rem;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;margin-top:.75rem}
+.pcard-cta{display:inline-block;margin-top:1.5rem;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(201,169,110,.5);transition:color .3s}
+.pcard:hover .pcard-cta{color:var(--gold)}
+
+/* BOOKING */
+.booking-section{padding:5rem 3rem;background:#0d0d0d}
+.booking-inner{max-width:680px;margin:0 auto;border:1px solid rgba(255,255,255,.08);background:#111;border-radius:2px;padding:3rem}
+.steps-nav{display:flex;margin-bottom:3rem;position:relative}
+.steps-nav::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:rgba(255,255,255,.08)}
+.step-dot{flex:1;display:flex;flex-direction:column;align-items:center;gap:.5rem;padding-bottom:1.2rem;position:relative}
+.step-dot::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:transparent;transition:background .3s}
+.step-dot.active::after{background:var(--gold)}
+.step-dot .num{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:rgba(255,255,255,.3);transition:all .3s}
+.step-dot span{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);transition:color .3s}
+.step-dot.active .num{border-color:var(--gold);color:var(--gold);background:rgba(201,169,110,.1)}
+.step-dot.active span{color:rgba(255,255,255,.7)}
+.step-dot.done .num{background:var(--gold);border-color:var(--gold);color:#111}
+.step-dot.done span{color:var(--gold)}
+.step-panel{display:none}
+.step-panel.on{display:block;animation:fadeUp .4s ease}
+.step-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2rem;color:#fff;font-style:italic}
+
+/* FORMS */
+.fg{margin-bottom:1.4rem}
+.fg label{display:block;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.55rem}
+.fg input,.fg select{width:100%;padding:.85rem 1rem;border:1px solid rgba(255,255,255,.1);border-radius:1px;font-size:.9rem;background:rgba(255,255,255,.04);color:#fff;outline:none;transition:border .3s}
+.fg input:focus,.fg select:focus{border-color:var(--gold)}
+.fg input.err{border-color:#c0392b}
+.fg input::placeholder{color:rgba(255,255,255,.2)}
+.fg select option{background:#1a1a1a;color:#fff}
+.errtxt{font-size:.7rem;color:#e74c3c;margin-top:.35rem;display:none}
+.pick-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.pick{border:1px solid rgba(255,255,255,.1);padding:.6rem 1.1rem;border-radius:1px;cursor:pointer;font-size:.78rem;display:flex;gap:.5rem;align-items:center;background:transparent;color:rgba(255,255,255,.6);transition:all .3s}
+.pick:hover{border-color:rgba(201,169,110,.4);color:#fff}
+.pick.on{background:rgba(201,169,110,.1);border-color:var(--gold);color:#fff}
+.pick strong{color:var(--gold);font-weight:500}
+.cal-wrap-inner{border:1px solid rgba(255,255,255,.08);border-radius:1px;padding:1.2rem;margin-bottom:1rem;background:rgba(255,255,255,.02)}
+.cal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.cal-top h4{font-size:.85rem;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.cal-btn2{width:30px;height:30px;border:1px solid rgba(255,255,255,.1);background:transparent;cursor:pointer;border-radius:1px;font-size:1rem;color:rgba(255,255,255,.5);transition:all .3s}
+.cal-btn2:hover{border-color:var(--gold);color:var(--gold)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:.5rem}
+.dname{text-align:center;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.2);padding:.35rem 0}
+.dcel{text-align:center;padding:.5rem .2rem;font-size:.82rem;border-radius:1px;color:rgba(255,255,255,.15)}
+.dcel.avail{color:rgba(255,255,255,.7);cursor:pointer;border:1px solid rgba(255,255,255,.08);transition:all .3s}
+.dcel.avail:hover{background:rgba(201,169,110,.1);border-color:rgba(201,169,110,.4);color:#fff}
+.dcel.picked{background:rgba(201,169,110,.15);border-color:var(--gold)!important;color:var(--gold)}
+.slots{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem}
+.slt{padding:.5rem 1.1rem;border:1px solid rgba(255,255,255,.08);border-radius:1px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.5);transition:all .3s}
+.slt:hover,.slt.on{background:rgba(201,169,110,.12);border-color:var(--gold);color:var(--gold)}
+.slt.taken{background:rgba(255,255,255,.02);color:rgba(255,255,255,.15);border-color:rgba(255,255,255,.05);cursor:not-allowed}
+.recap{border:1px solid rgba(255,255,255,.08);border-radius:1px;padding:1.5rem;margin-bottom:2rem;background:rgba(255,255,255,.02)}
+.recap-row{display:flex;justify-content:space-between;padding:.65rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.85rem}
+.recap-row:last-child{border-bottom:none;padding-top:.85rem}
+.recap-row span:first-child{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.recap-row span:last-child{color:rgba(255,255,255,.8)}
+.recap-row.total span:last-child{color:var(--gold);font-size:1.1rem}
+.btn-dark2{background:var(--gold);color:#111;border:none;padding:.85rem 2.2rem;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;font-weight:600;cursor:pointer;border-radius:1px;transition:all .3s;margin-top:.5rem}
+.btn-dark2:hover{background:#b8945a;transform:translateY(-1px)}
+.btn-dark2:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-ghost2{background:transparent;color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.12);padding:.85rem 2.2rem;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;border-radius:1px;margin-right:.75rem;margin-top:.5rem;transition:all .3s}
+.btn-ghost2:hover{border-color:rgba(255,255,255,.3);color:#fff}
+
+/* SUCCESS */
+.success-wrap{display:none;text-align:center;padding:6rem 2rem}
+.success-wrap.on{display:block;animation:fadeUp .6s ease}
+.tick-ring{width:80px;height:80px;border:1px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 2.5rem;font-size:2rem;color:var(--gold)}
+.success-wrap h2{font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:300;letter-spacing:.12em;text-transform:uppercase;margin-bottom:1rem;font-style:italic}
+.success-wrap p{color:rgba(255,255,255,.4);font-size:.85rem;line-height:1.8;max-width:420px;margin:0 auto .5rem}
+
+/* AUTH PAGE */
+#page-auth{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0d0d0d;padding:2rem}
+.auth-box{background:#111;border:1px solid rgba(255,255,255,.08);border-radius:2px;padding:3rem 2.5rem;width:100%;max-width:400px}
+.auth-logo{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;letter-spacing:.25em;text-transform:uppercase;font-style:italic;text-align:center;margin-bottom:.3rem}
+.auth-logo em{color:var(--gold);font-style:normal}
+.auth-sub{font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.3);text-align:center;margin-bottom:2.5rem}
+.auth-tabs{display:flex;border:1px solid rgba(255,255,255,.1);border-radius:1px;margin-bottom:2rem;overflow:hidden}
+.auth-tab{flex:1;padding:.7rem;text-align:center;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(255,255,255,.4);background:transparent;border:none;transition:all .3s}
+.auth-tab.on{background:var(--gold);color:#111;font-weight:600}
+.auth-err{font-size:.75rem;color:#e74c3c;text-align:center;margin-bottom:1rem;display:none;padding:.6rem;background:rgba(231,76,60,.1);border-radius:1px}
+.auth-ok{font-size:.75rem;color:#2ecc71;text-align:center;margin-bottom:1rem;display:none;padding:.6rem;background:rgba(46,204,113,.1);border-radius:1px}
+
+/* ACCOUNT PAGE */
+#page-account{min-height:100vh;background:#0d0d0d;padding-top:80px}
+.account-wrap{max-width:780px;margin:0 auto;padding:3rem 2rem}
+.account-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:3rem}
+.account-title{font-family:'Cormorant Garamond',serif;font-size:2.5rem;font-weight:300;letter-spacing:.1em;font-style:italic}
+.account-title em{color:var(--gold);font-style:normal}
+.account-tabs{display:flex;gap:0;border:1px solid rgba(255,255,255,.1);border-radius:1px;overflow:hidden;margin-bottom:2rem;width:fit-content}
+.account-tab{padding:.65rem 1.5rem;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:rgba(255,255,255,.4);background:transparent;border:none;transition:all .2s}
+.account-tab.on{background:var(--gold);color:#111;font-weight:600}
+.account-panel{display:none}
+.account-panel.on{display:block;animation:fadeUp .3s ease}
+
+/* PROFILE FORM */
+.profile-card{background:#111;border:1px solid rgba(255,255,255,.08);border-radius:2px;padding:2rem;margin-bottom:1.5rem}
+.profile-card h3{font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.profile-ok{font-size:.75rem;color:#2ecc71;margin-top:.75rem;display:none;padding:.5rem;background:rgba(46,204,113,.08);border-radius:1px;text-align:center}
+
+/* RDV CARDS */
+.rdv-card{background:#111;border:1px solid rgba(255,255,255,.08);border-radius:2px;padding:1.5rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;transition:border-color .3s}
+.rdv-card:hover{border-color:rgba(201,169,110,.2)}
+.rdv-card.past{opacity:.5}
+.rdv-info h4{font-size:.95rem;font-weight:500;margin-bottom:.4rem}
+.rdv-info p{font-size:.78rem;color:rgba(255,255,255,.4);letter-spacing:.05em}
+.rdv-badge{display:inline-block;padding:.2rem .7rem;border-radius:1px;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:.5rem}
+.rdv-badge.coupe{background:#e8f0fe;color:#1a56a0}
+.rdv-badge.barbe{background:#fef3e2;color:#92560a}
+.rdv-badge.cb{background:#e8faf0;color:#1a7a46}
+.rdv-badge.past-badge{background:rgba(255,255,255,.06);color:rgba(255,255,255,.3)}
+.rdv-actions{display:flex;gap:.5rem;flex-shrink:0}
+.btn-sm{padding:.5rem 1rem;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:1px;transition:all .2s;white-space:nowrap}
+.btn-sm-gold{background:var(--gold);color:#111;border:none;font-weight:600}
+.btn-sm-gold:hover{background:#b8945a}
+.btn-sm-red{background:transparent;color:#e74c3c;border:1px solid rgba(231,76,60,.4)}
+.btn-sm-red:hover{background:#e74c3c;color:#fff}
+.empty-rdv{text-align:center;padding:3rem;color:rgba(255,255,255,.25);font-size:.85rem;letter-spacing:.08em}
+
+/* REPROG MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.on{display:flex}
+.modal-box{background:#1a1a1a;border:1px solid rgba(255,255,255,.1);border-radius:2px;padding:2rem;width:100%;max-width:480px}
+.modal-box h3{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;font-style:italic;letter-spacing:.1em;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.08)}
+.modal-actions{display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.5rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.08)}
+
+footer{background:#080808;padding:3rem;text-align:center;border-top:1px solid rgba(255,255,255,.05)}
+.f-logo{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:.5rem;font-style:italic}
+footer p{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.2)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s,transform .7s}
+.reveal.visible{opacity:1;transform:translateY(0)}
+@media(max-width:700px){nav{padding:1rem 1.5rem}nav ul{gap:1rem}.section{padding:5rem 1.5rem}.hero-h1{font-size:4rem}.presta-grid{grid-template-columns:1fr}.booking-inner{padding:2rem 1.5rem}.form-row{grid-template-columns:1fr}.rdv-card{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="cur-ring"></div>
+
+<!-- ===== PAGE PRINCIPALE ===== -->
+<div class="page on" id="page-main">
+<nav id="main-nav">
+  <div class="logo">T<em>H</em>ALES</div>
+  <ul>
+    <li id="nav-presta">Prestations</li>
+    <li id="nav-rdv">Réserver</li>
+    <li class="nav-account" id="nav-account">Mon compte</li>
+  </ul>
+</nav>
+
+<div id="sec-hero">
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-lines"><span></span><span></span><span></span></div>
+    <p class="hero-tag">Coiffeur &nbsp;&bull;&nbsp; Barbier &nbsp;&bull;&nbsp; Rodez</p>
+    <h1 class="hero-h1">T<em>H</em>ALES</h1>
+    <p class="hero-sub">L'art de la coupe, le soin de la barbe</p>
+    <button class="btn-hero" id="hero-btn"><span>Prendre rendez-vous</span></button>
+    <div class="scroll-ind"><span>Défiler</span><div></div></div>
+  </div>
+</div>
+
+<div class="divider"><div class="divider-line"></div><div class="divider-icon">✦</div><div class="divider-line"></div></div>
+
+<div class="section reveal" id="sec-prestations">
+  <p class="sec-label">Nos services</p>
+  <h2 class="sec-h2">Prestations</h2>
+  <div class="presta-grid">
+    <div class="pcard" data-p="Coupe" data-v="20"><span class="pcard-icon">✂</span><h3>Coupe</h3><div class="pcard-line"></div><div class="price">20<sup>€</sup></div><p>Coupe homme personnalisée</p><span class="pcard-cta">Réserver →</span></div>
+    <div class="pcard" data-p="Barbe" data-v="5"><span class="pcard-icon">🪒</span><h3>Barbe</h3><div class="pcard-line"></div><div class="price">5<sup>€</sup></div><p>Taille et soin de la barbe</p><span class="pcard-cta">Réserver →</span></div>
+    <div class="pcard" data-p="Coupe + Barbe" data-v="25"><span class="pcard-icon">⚡</span><h3>Coupe + Barbe</h3><div class="pcard-line"></div><div class="price">25<sup>€</sup></div><p>Le duo complet</p><span class="pcard-cta">Réserver →</span></div>
+  </div>
+</div>
+
+<div class="divider"><div class="divider-line"></div><div class="divider-icon">✦</div><div class="divider-line"></div></div>
+
+<div class="booking-section reveal" id="sec-booking">
+  <p class="sec-label">Agenda</p>
+  <h2 class="sec-h2" style="margin-bottom:3rem">Réservation</h2>
+  <div class="booking-inner">
+    <div class="steps-nav">
+      <div class="step-dot active" id="dot1"><div class="num">1</div><span>Prestation</span></div>
+      <div class="step-dot" id="dot2"><div class="num">2</div><span>Créneau</span></div>
+      <div class="step-dot" id="dot3"><div class="num">3</div><span>Confirmation</span></div>
+    </div>
+    <div class="step-panel on" id="p1">
+      <div class="step-title">Prestation</div>
+      <div class="pick-row" id="pick-row-main">
+        <div class="pick" data-p="Coupe" data-v="20">Coupe <strong>20€</strong></div>
+        <div class="pick" data-p="Barbe" data-v="5">Barbe <strong>5€</strong></div>
+        <div class="pick" data-p="Coupe + Barbe" data-v="25">Coupe + Barbe <strong>25€</strong></div>
+      </div>
+      <div class="errtxt" id="e-presta" style="display:none;margin-bottom:.8rem">Veuillez choisir une prestation.</div>
+      <button class="btn-dark2" id="btn-s1">Continuer</button>
+    </div>
+    <div class="step-panel" id="p2">
+      <div class="step-title">Créneau</div>
+      <label style="font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.35);display:block;margin-bottom:.6rem">Date — lundis & jeudis</label>
+      <div class="cal-wrap-inner">
+        <div class="cal-top"><button class="cal-btn2" id="cal-prev">&#8249;</button><h4 id="cal-lbl"></h4><button class="cal-btn2" id="cal-next">&#8250;</button></div>
+        <div class="cal-grid" id="cal-names"></div>
+        <div class="cal-grid" id="cal-cells"></div>
+      </div>
+      <div class="errtxt" id="e-date" style="display:none;margin-bottom:.6rem">Veuillez choisir une date.</div>
+      <label style="font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.35);display:block;margin-bottom:.6rem">Heure</label>
+      <div class="slots" id="slots"></div>
+      <div class="errtxt" id="e-slot" style="display:none;margin-bottom:.6rem">Veuillez choisir un créneau.</div>
+      <button class="btn-ghost2" id="btn-s2-back">Retour</button>
+      <button class="btn-dark2" id="btn-s2">Continuer</button>
+    </div>
+    <div class="step-panel" id="p3">
+      <div class="step-title">Récapitulatif</div>
+      <div class="recap">
+        <div class="recap-row"><span>Nom</span><span id="r-name"></span></div>
+        <div class="recap-row"><span>Email</span><span id="r-email"></span></div>
+        <div class="recap-row"><span>Téléphone</span><span id="r-phone"></span></div>
+        <div class="recap-row"><span>Prestation</span><span id="r-presta"></span></div>
+        <div class="recap-row"><span>Date</span><span id="r-date"></span></div>
+        <div class="recap-row"><span>Heure</span><span id="r-slot"></span></div>
+        <div class="recap-row total"><span>Total</span><span id="r-price"></span></div>
+      </div>
+      <button class="btn-ghost2" id="btn-s3-back">Retour</button>
+      <button class="btn-dark2" id="btn-confirm">Confirmer le rendez-vous</button>
+    </div>
+  </div>
+</div>
+
+<div class="success-wrap" id="sec-success">
+  <div class="tick-ring">✓</div>
+  <h2>Confirmé</h2>
+  <p id="success-txt"></p>
+  <p style="margin-top:1.2rem;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.2)">Un SMS de confirmation a été envoyé.</p>
+  <button class="btn-dark2" id="btn-new" style="margin-top:2.5rem">Nouveau rendez-vous</button>
+</div>
+
+<footer><div class="f-logo">THALES</div><p>&copy; 2026 &nbsp;&bull;&nbsp; Coiffeur Barbier &nbsp;&bull;&nbsp; Sur rendez-vous uniquement</p></footer>
+</div><!-- /page-main -->
+
+<!-- ===== PAGE AUTH ===== -->
+<div class="page" id="page-auth">
+  <div id="sec-auth" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem">
+    <div class="auth-box">
+      <div class="auth-logo">T<em>H</em>ALES</div>
+      <div class="auth-sub">Espace client</div>
+      <div class="auth-tabs">
+        <button class="auth-tab on" id="auth-tab-login" onclick="switchAuthTab('login')">Connexion</button>
+        <button class="auth-tab" id="auth-tab-signup" onclick="switchAuthTab('signup')">Inscription</button>
+      </div>
+      <div class="auth-err" id="auth-err"></div>
+      <div class="auth-ok" id="auth-ok"></div>
+      <div id="auth-login-form">
+        <div class="fg"><label>Email</label><input type="email" id="login-email" placeholder="jean@email.com"></div>
+        <div class="fg"><label>Mot de passe</label><input type="password" id="login-pwd" placeholder="••••••••"></div>
+        <button class="btn-dark2" style="width:100%;margin-top:.5rem" id="btn-login">Se connecter</button>
+      </div>
+      <div id="auth-signup-form" style="display:none">
+        <div class="fg"><label>Email</label><input type="email" id="signup-email" placeholder="jean@email.com"></div>
+        <div class="fg"><label>Mot de passe</label><input type="password" id="signup-pwd" placeholder="Minimum 6 caractères"></div>
+        <div class="fg"><label>Confirmer le mot de passe</label><input type="password" id="signup-pwd2" placeholder="••••••••"></div>
+        <button class="btn-dark2" style="width:100%;margin-top:.5rem" id="btn-signup">Créer mon compte</button>
+      </div>
+      <p style="text-align:center;margin-top:1.5rem;font-size:.72rem;color:rgba(255,255,255,.3);cursor:pointer" id="back-to-site">← Retour au site</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE ACCOUNT ===== -->
+<div class="page" id="page-account">
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:100;padding:1.2rem 2.5rem;display:flex;justify-content:space-between;align-items:center;background:rgba(13,13,13,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06)">
+    <div class="logo" style="cursor:pointer" id="account-logo">T<em style="color:var(--gold);font-style:normal">H</em>ALES</div>
+    <div style="display:flex;gap:1rem;align-items:center">
+      <span style="font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4)" id="account-email-display"></span>
+      <button class="btn-ghost2" style="margin:0;padding:.45rem 1rem;font-size:.7rem" id="btn-logout">Déconnexion</button>
+    </div>
+  </nav>
+  <div class="account-wrap">
+    <div class="account-header">
+      <div class="account-title">Mon <em>compte</em></div>
+    </div>
+    <div class="account-tabs">
+      <button class="account-tab on" onclick="switchAccountTab('rdv')">Mes RDV</button>
+      <button class="account-tab" onclick="switchAccountTab('profile')">Mon profil</button>
+      <button class="account-tab" onclick="switchAccountTab('pwd')">Mot de passe</button>
+    </div>
+
+    <!-- MES RDV -->
+    <div class="account-panel on" id="panel-rdv">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+        <p style="font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4)">Vos rendez-vous</p>
+        <button class="btn-dark2" style="margin:0;padding:.6rem 1.2rem;font-size:.7rem" id="btn-new-rdv">+ Nouveau RDV</button>
+      </div>
+      <div id="rdv-list"></div>
+    </div>
+
+    <!-- MON PROFIL -->
+    <div class="account-panel" id="panel-profile">
+      <div class="profile-card">
+        <h3>Informations personnelles</h3>
+        <div class="form-row">
+          <div class="fg"><label>Nom et prénom</label><input type="text" id="p-name" placeholder="Jean Dupont"></div>
+          <div class="fg"><label>Téléphone</label><input type="tel" id="p-phone" placeholder="06 12 34 56 78"></div>
+        </div>
+        <div class="fg"><label>Email</label><input type="email" id="p-email" disabled style="opacity:.4;cursor:not-allowed"></div>
+        <button class="btn-dark2" id="btn-save-profile">Sauvegarder</button>
+        <div class="profile-ok" id="profile-ok">✓ Profil mis à jour !</div>
+      </div>
+    </div>
+
+    <!-- MOT DE PASSE -->
+    <div class="account-panel" id="panel-pwd">
+      <div class="profile-card">
+        <h3>Changer le mot de passe</h3>
+        <div class="fg"><label>Nouveau mot de passe</label><input type="password" id="new-pwd" placeholder="Minimum 6 caractères"></div>
+        <div class="fg"><label>Confirmer</label><input type="password" id="new-pwd2" placeholder="••••••••"></div>
+        <div class="auth-err" id="pwd-err" style="margin-bottom:1rem"></div>
+        <button class="btn-dark2" id="btn-change-pwd">Modifier le mot de passe</button>
+        <div class="profile-ok" id="pwd-ok">✓ Mot de passe modifié !</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPROG MODAL -->
+<div class="modal-overlay" id="modal-reprog">
+  <div class="modal-box">
+    <h3>Reprogrammer le rendez-vous</h3>
+    <label style="font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.35);display:block;margin-bottom:.6rem">Nouvelle date — lundis & jeudis</label>
+    <div class="cal-wrap-inner">
+      <div class="cal-top"><button class="cal-btn2" id="rcal-prev">&#8249;</button><h4 id="rcal-lbl"></h4><button class="cal-btn2" id="rcal-next">&#8250;</button></div>
+      <div class="cal-grid" id="rcal-names"></div>
+      <div class="cal-grid" id="rcal-cells"></div>
+    </div>
+    <label style="font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.35);display:block;margin-bottom:.6rem">Heure</label>
+    <div class="slots" id="rslots"></div>
+    <div class="auth-err" id="reprog-err" style="margin-bottom:.5rem"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost2" style="margin:0" id="modal-reprog-cancel">Annuler</button>
+      <button class="btn-dark2" style="margin:0" id="modal-reprog-confirm">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- CANCEL MODAL -->
+<div class="modal-overlay" id="modal-cancel">
+  <div class="modal-box" style="max-width:380px;text-align:center">
+    <h3>Annuler le rendez-vous ?</h3>
+    <p id="cancel-txt" style="font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:1.5rem;line-height:1.6"></p>
+    <div class="modal-actions" style="justify-content:center">
+      <button class="btn-ghost2" style="margin:0" id="modal-cancel-no">Garder</button>
+      <button class="btn-dark2" style="margin:0;background:#e74c3c" id="modal-cancel-yes">Annuler le RDV</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var SUPA_URL='https://kqatwcmcmeezxlskwcmk.supabase.co';
+var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXR3Y21jbWVlenhsc2t3Y21rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NjQ1MTQsImV4cCI6MjA5MjM0MDUxNH0.5aaaTTDmXa6qQ8xvlfxNZmt0ThCbcdi9DviZNG95QVo';
+var MFR=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+var DFR=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+var s={presta:'',price:0,date:null,slot:'',calY:0,calM:0,taken:{},indispos:[]};
+var currentUser=null,userProfile=null,userRdvs=[];
+var reprogId=null,reprogRcalY=0,reprogRcalM=0,reprogDate=null,reprogSlot='';
+var cancelId=null;
+
+/* ---- SUPABASE HELPERS ---- */
+function anonH(){return{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'};}
+function authH(){var tok=currentUser?currentUser.access_token:SUPA_KEY;return{'apikey':SUPA_KEY,'Authorization':'Bearer '+tok,'Content-Type':'application/json','Prefer':'return=representation'};}
+
+async function supaAuth(path,body){
+  var res=await fetch(SUPA_URL+'/auth/v1/'+path,{method:'POST',headers:{'apikey':SUPA_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  return res.json();
+}
+
+async function loadSession(){
+  var stored=localStorage.getItem('thales_session');
+  if(!stored)return;
+  try{
+    var sess=JSON.parse(stored);
+    // Essaie d'abord avec le token actuel
+    var res=await fetch(SUPA_URL+'/auth/v1/user',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+sess.access_token}});
+    if(res.ok){
+      currentUser=sess;
+      await loadProfile();
+      return;
+    }
+    // Si expiré, essaie de rafraîchir avec le refresh_token
+    if(sess.refresh_token){
+      var r2=await fetch(SUPA_URL+'/auth/v1/token?grant_type=refresh_token',{
+        method:'POST',
+        headers:{'apikey':SUPA_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify({refresh_token:sess.refresh_token})
+      });
+      if(r2.ok){
+        var newSess=await r2.json();
+        if(newSess.access_token){
+          currentUser=newSess;
+          localStorage.setItem('thales_session',JSON.stringify(newSess));
+          await loadProfile();
+          return;
+        }
+      }
+    }
+    // Rien ne fonctionne, on efface la session
+    localStorage.removeItem('thales_session');
+  }catch(e){localStorage.removeItem('thales_session');}
+}
+
+async function loadProfile(){
+  if(!currentUser)return;
+  var res=await fetch(SUPA_URL+'/rest/v1/profiles?id=eq.'+currentUser.user.id+'&select=*',{headers:authH()});
+  var rows=await res.json();
+  userProfile=Array.isArray(rows)&&rows[0]?rows[0]:null;
+}
+
+async function loadUserRdvs(){
+  if(!currentUser)return;
+  var res=await fetch(SUPA_URL+'/rest/v1/reservations?user_id=eq.'+currentUser.user.id+'&select=*&order=date_rdv.desc,slot.desc',{headers:authH()});
+  var rows=await res.json();
+  userRdvs=Array.isArray(rows)?rows:[];
+}
+
+async function loadTaken(){
+  var [r1,r2]=await Promise.all([
+    fetch(SUPA_URL+'/rest/v1/reservations?select=date_rdv,slot',{headers:anonH()}),
+    fetch(SUPA_URL+'/rest/v1/indisponibilites?select=date_debut,date_fin',{headers:anonH()})
+  ]);
+  var rows1=await r1.json(),rows2=await r2.json();
+  s.taken={};
+  if(Array.isArray(rows1))rows1.forEach(function(r){var k=r.date_rdv;if(!s.taken[k])s.taken[k]=[];s.taken[k].push(r.slot);});
+  s.indispos=Array.isArray(rows2)?rows2:[];
+}
+
+function isBlocked(iso){return s.indispos.some(function(i){return iso>=i.date_debut&&iso<=i.date_fin;});}
+
+/* ---- PAGE MANAGEMENT ---- */
+function showPage(id){
+  ['page-main','page-auth','page-account'].forEach(function(p){
+    var el=document.getElementById(p);
+    if(el){el.classList.remove('on');}
+  });
+  var target=document.getElementById(id);
+  if(target){target.classList.add('on');}
+  window.scrollTo(0,0);
+}
+
+function updateNav(){
+  var navAcc=document.getElementById('nav-account');
+  if(currentUser){navAcc.textContent='Mon compte';}
+  else{navAcc.textContent='Connexion';}
+}
+
+/* ---- CURSOR & SCROLL ---- */
+var cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+var mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function anim(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(anim);})();
+window.addEventListener('scroll',function(){document.getElementById('main-nav').classList.toggle('scrolled',window.scrollY>50);});
+var obs=new IntersectionObserver(function(e){e.forEach(function(en){if(en.isIntersecting)en.target.classList.add('visible');});},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
+
+/* ---- NAVIGATION ---- */
+function jump(id){var el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+
+document.getElementById('hero-btn').addEventListener('click',function(){
+  if(!currentUser){showPage('page-auth');switchAuthTab('signup');return;}
+  jump('sec-booking');
+});
+document.getElementById('nav-rdv').addEventListener('click',function(){
+  if(!currentUser){showPage('page-auth');switchAuthTab('signup');return;}
+  showPage('page-main');setTimeout(function(){jump('sec-booking');},100);
+});
+document.getElementById('nav-presta').addEventListener('click',function(){showPage('page-main');setTimeout(function(){jump('sec-prestations');},100);});
+document.getElementById('nav-account').addEventListener('click',async function(){
+  // Recharge la session depuis le localStorage si currentUser est null
+  if(!currentUser){
+    var stored=localStorage.getItem('thales_session');
+    if(stored){
+      try{
+        var sess=JSON.parse(stored);
+        // Rafraîchit le token si nécessaire
+        var res=await fetch(SUPA_URL+'/auth/v1/user',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+sess.access_token}});
+        if(res.ok){
+          currentUser=sess;
+          await loadProfile();
+        } else if(sess.refresh_token){
+          var r2=await fetch(SUPA_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'apikey':SUPA_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:sess.refresh_token})});
+          if(r2.ok){var ns=await r2.json();if(ns.access_token){currentUser=ns;localStorage.setItem('thales_session',JSON.stringify(ns));await loadProfile();}}
+        }
+      }catch(e){}
+    }
+  }
+  if(currentUser){showPage('page-account');openAccountPage();}
+  else{showPage('page-auth');}
+});
+document.getElementById('account-logo').addEventListener('click',function(){showPage('page-main');});
+document.getElementById('back-to-site').addEventListener('click',function(){showPage('page-main');});
+
+document.querySelectorAll('.pcard').forEach(function(c){
+  c.addEventListener('click',function(){
+    s.presta=c.dataset.p;s.price=parseInt(c.dataset.v);
+    if(!currentUser){showPage('page-auth');switchAuthTab('signup');return;}
+    showPage('page-main');setTimeout(function(){jump('sec-booking');setPick(s.presta);},100);
+  });
+});
+
+/* ---- AUTH ---- */
+function switchAuthTab(t){
+  document.getElementById('auth-tab-login').classList.toggle('on',t==='login');
+  document.getElementById('auth-tab-signup').classList.toggle('on',t==='signup');
+  document.getElementById('auth-login-form').style.display=t==='login'?'block':'none';
+  document.getElementById('auth-signup-form').style.display=t==='signup'?'block':'none';
+  document.getElementById('auth-err').style.display='none';
+  document.getElementById('auth-ok').style.display='none';
+}
+
+document.getElementById('btn-login').addEventListener('click',async function(){
+  var email=document.getElementById('login-email').value.trim();
+  var pwd=document.getElementById('login-pwd').value;
+  var errEl=document.getElementById('auth-err');errEl.style.display='none';
+  if(!email||!pwd){errEl.textContent='Veuillez remplir tous les champs.';errEl.style.display='block';return;}
+  var btn=this;btn.textContent='Connexion...';btn.disabled=true;
+  var data=await supaAuth('token?grant_type=password',{email:email,password:pwd});
+  btn.textContent='Se connecter';btn.disabled=false;
+  if(data.access_token){
+    currentUser=data;localStorage.setItem('thales_session',JSON.stringify(data));
+    await loadProfile();updateNav();showPage('page-account');openAccountPage();
+  }else{errEl.textContent=data.error_description||'Email ou mot de passe incorrect.';errEl.style.display='block';}
+});
+
+document.getElementById('btn-signup').addEventListener('click',async function(){
+  var email=document.getElementById('signup-email').value.trim();
+  var pwd=document.getElementById('signup-pwd').value;
+  var pwd2=document.getElementById('signup-pwd2').value;
+  var errEl=document.getElementById('auth-err');errEl.style.display='none';
+  if(!email||!pwd||!pwd2){errEl.textContent='Veuillez remplir tous les champs.';errEl.style.display='block';return;}
+  if(pwd!==pwd2){errEl.textContent='Les mots de passe ne correspondent pas.';errEl.style.display='block';return;}
+  if(pwd.length<6){errEl.textContent='Le mot de passe doit faire au moins 6 caractères.';errEl.style.display='block';return;}
+  var btn=this;btn.textContent='Création...';btn.disabled=true;
+  var data=await supaAuth('signup',{email:email,password:pwd});
+  btn.textContent='Créer mon compte';btn.disabled=false;
+  if(data.access_token){
+    currentUser=data;localStorage.setItem('thales_session',JSON.stringify(data));
+    await loadProfile();updateNav();openAccountPage();
+  }else if(data.id){
+    document.getElementById('auth-ok').textContent='Compte créé ! Vous pouvez vous connecter.';document.getElementById('auth-ok').style.display='block';switchAuthTab('login');
+  }else{errEl.textContent=data.error_description||'Une erreur est survenue.';errEl.style.display='block';}
+});
+
+document.getElementById('btn-logout').addEventListener('click',async function(){
+  if(currentUser)await fetch(SUPA_URL+'/auth/v1/logout',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+currentUser.access_token}});
+  currentUser=null;userProfile=null;localStorage.removeItem('thales_session');
+  updateNav();showPage('page-main');
+});
+
+/* ---- ACCOUNT PAGE ---- */
+async function openAccountPage(){
+  await Promise.all([loadProfile(),loadUserRdvs()]);
+  document.getElementById('account-email-display').textContent=currentUser.user.email;
+  if(userProfile){document.getElementById('p-name').value=userProfile.name||'';document.getElementById('p-phone').value=userProfile.phone||'';}
+  document.getElementById('p-email').value=currentUser.user.email;
+  renderRdvList();switchAccountTab('rdv');
+  showPage('page-account');
+}
+
+function switchAccountTab(t){
+  var tabs=['rdv','profile','pwd'];
+  tabs.forEach(function(k){
+    document.getElementById('panel-'+k).classList.toggle('on',k===t);
+  });
+  document.querySelectorAll('.account-tab').forEach(function(tab,i){tab.classList.toggle('on',tabs[i]===t);});
+}
+
+function renderRdvList(){
+  var container=document.getElementById('rdv-list');container.innerHTML='';
+  var now=new Date().toISOString().slice(0,10);
+  if(!userRdvs.length){container.innerHTML='<div class="empty-rdv">Aucun rendez-vous pour le moment.</div>';return;}
+  var future=userRdvs.filter(function(r){return r.date_rdv>=now;});
+  var past=userRdvs.filter(function(r){return r.date_rdv<now;});
+  if(future.length){
+    var h=document.createElement('p');h.style.cssText='font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem';h.textContent='À venir';container.appendChild(h);
+    future.forEach(function(r){container.appendChild(makeRdvCard(r,false));});
+  }
+  if(past.length){
+    var h2=document.createElement('p');h2.style.cssText='font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3);margin:1.5rem 0 .75rem';h2.textContent='Historique';container.appendChild(h2);
+    past.forEach(function(r){container.appendChild(makeRdvCard(r,true));});
+  }
+}
+
+function makeRdvCard(r,isPast){
+  var d=new Date(r.date_rdv+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var badgeClass=r.presta==='Coupe'?'coupe':r.presta==='Barbe'?'barbe':'cb';
+  var card=document.createElement('div');
+  card.className='rdv-card'+(isPast?' past':'');
+  card.innerHTML='<div class="rdv-info"><span class="rdv-badge '+(isPast?'past-badge':badgeClass)+'">'+r.presta+'</span><h4>'+d+'</h4><p>'+r.slot+' &nbsp;&bull;&nbsp; '+r.price+'€</p></div>'+
+    (!isPast?'<div class="rdv-actions"><button class="btn-sm btn-sm-gold" data-id="'+r.id+'">Reprogrammer</button><button class="btn-sm btn-sm-red" data-id="'+r.id+'" data-date="'+d+'" data-presta="'+r.presta+'" data-slot="'+r.slot+'">Annuler</button></div>':'');
+  if(!isPast){
+    card.querySelector('.btn-sm-gold').addEventListener('click',function(){openReprog(r);});
+    card.querySelector('.btn-sm-red').addEventListener('click',function(){openCancelModal(r.id,r.presta,d,r.slot);});
+  }
+  return card;
+}
+
+/* ---- PROFILE SAVE ---- */
+document.getElementById('btn-save-profile').addEventListener('click',async function(){
+  var name=document.getElementById('p-name').value.trim();
+  var phone=document.getElementById('p-phone').value.trim();
+  var btn=this;btn.disabled=true;btn.textContent='Sauvegarde...';
+  var exists=userProfile&&userProfile.id;
+  var method=exists?'PATCH':'POST';
+  var url=SUPA_URL+'/rest/v1/profiles'+(exists?'?id=eq.'+currentUser.user.id:'');
+  var body={name:name,phone:phone};
+  if(!exists)body.id=currentUser.user.id;
+  await fetch(url,{method:method,headers:authH(),body:JSON.stringify(body)});
+  userProfile={id:currentUser.user.id,name:name,phone:phone};
+  btn.disabled=false;btn.textContent='Sauvegarder';
+  document.getElementById('profile-ok').style.display='block';
+  setTimeout(function(){document.getElementById('profile-ok').style.display='none';},2000);
+});
+
+/* ---- CHANGE PASSWORD ---- */
+document.getElementById('btn-change-pwd').addEventListener('click',async function(){
+  var p1=document.getElementById('new-pwd').value;
+  var p2=document.getElementById('new-pwd2').value;
+  var errEl=document.getElementById('pwd-err');errEl.style.display='none';
+  if(p1.length<6){errEl.textContent='Minimum 6 caractères.';errEl.style.display='block';return;}
+  if(p1!==p2){errEl.textContent='Les mots de passe ne correspondent pas.';errEl.style.display='block';return;}
+  var btn=this;btn.disabled=true;btn.textContent='Modification...';
+  var res=await fetch(SUPA_URL+'/auth/v1/user',{method:'PUT',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+currentUser.access_token,'Content-Type':'application/json'},body:JSON.stringify({password:p1})});
+  btn.disabled=false;btn.textContent='Modifier le mot de passe';
+  if(res.ok){document.getElementById('new-pwd').value='';document.getElementById('new-pwd2').value='';document.getElementById('pwd-ok').style.display='block';setTimeout(function(){document.getElementById('pwd-ok').style.display='none';},2000);}
+  else{errEl.textContent='Erreur lors de la modification.';errEl.style.display='block';}
+});
+
+/* ---- CANCEL RDV ---- */
+function openCancelModal(id,presta,date,slot){
+  cancelId=id;
+  document.getElementById('cancel-txt').textContent='Annuler votre '+presta+' le '+date+' à '+slot+' ?';
+  document.getElementById('modal-cancel').classList.add('on');
+}
+document.getElementById('modal-cancel-no').addEventListener('click',function(){document.getElementById('modal-cancel').classList.remove('on');cancelId=null;});
+document.getElementById('modal-cancel-yes').addEventListener('click',async function(){
+  if(!cancelId)return;
+  document.getElementById('modal-cancel').classList.remove('on');
+  await fetch(SUPA_URL+'/rest/v1/reservations?id=eq.'+cancelId,{method:'DELETE',headers:authH()});
+  userRdvs=userRdvs.filter(function(r){return r.id!==cancelId;});
+  cancelId=null;renderRdvList();
+});
+
+/* ---- REPROG RDV ---- */
+async function openReprog(r){
+  reprogId=r.id;reprogDate=null;reprogSlot='';
+  var now=new Date();reprogRcalY=now.getFullYear();reprogRcalM=now.getMonth();
+  await loadTaken();
+  renderRcal();
+  document.getElementById('rslots').innerHTML='';
+  document.getElementById('reprog-err').style.display='none';
+  document.getElementById('modal-reprog').classList.add('on');
+}
+document.getElementById('modal-reprog-cancel').addEventListener('click',function(){document.getElementById('modal-reprog').classList.remove('on');reprogId=null;});
+document.getElementById('rcal-prev').addEventListener('click',function(){var now=new Date();if(reprogRcalY===now.getFullYear()&&reprogRcalM===now.getMonth())return;reprogRcalM--;if(reprogRcalM<0){reprogRcalM=11;reprogRcalY--;}renderRcal();});
+document.getElementById('rcal-next').addEventListener('click',function(){reprogRcalM++;if(reprogRcalM>11){reprogRcalM=0;reprogRcalY++;}renderRcal();});
+
+document.getElementById('modal-reprog-confirm').addEventListener('click',async function(){
+  var errEl=document.getElementById('reprog-err');errEl.style.display='none';
+  if(!reprogDate){errEl.textContent='Veuillez choisir une date.';errEl.style.display='block';return;}
+  if(!reprogSlot){errEl.textContent='Veuillez choisir un créneau.';errEl.style.display='block';return;}
+  var isoDate=reprogDate.getFullYear()+'-'+pad(reprogDate.getMonth()+1)+'-'+pad(reprogDate.getDate());
+  var btn=this;btn.disabled=true;btn.textContent='Enregistrement...';
+  await fetch(SUPA_URL+'/rest/v1/reservations?id=eq.'+reprogId,{method:'PATCH',headers:authH(),body:JSON.stringify({date_rdv:isoDate,slot:reprogSlot})});
+  var rdv=userRdvs.find(function(r){return r.id===reprogId;});
+  if(rdv){rdv.date_rdv=isoDate;rdv.slot=reprogSlot;}
+  document.getElementById('modal-reprog').classList.remove('on');
+  reprogId=null;renderRdvList();btn.disabled=false;btn.textContent='Confirmer';
+});
+
+function renderRcal(){
+  document.getElementById('rcal-lbl').textContent=MFR[reprogRcalM]+' '+reprogRcalY;
+  var nn=document.getElementById('rcal-names');nn.innerHTML='';
+  DFR.forEach(function(d){var el=document.createElement('div');el.className='dname';el.textContent=d;nn.appendChild(el);});
+  var avail=getAvailableDays(reprogRcalY,reprogRcalM);
+  var first=new Date(reprogRcalY,reprogRcalM,1).getDay();
+  var off=first===0?6:first-1;
+  var total=new Date(reprogRcalY,reprogRcalM+1,0).getDate();
+  var grid=document.getElementById('rcal-cells');grid.innerHTML='';
+  for(var i=0;i<off;i++){var e=document.createElement('div');e.className='dcel';grid.appendChild(e);}
+  for(var d=1;d<=total;d++){
+    var el=document.createElement('div');var dt=new Date(reprogRcalY,reprogRcalM,d);
+    if(avail.indexOf(d)>-1){
+      el.className='dcel avail'+(reprogDate&&dk(reprogDate)===dk(dt)?' picked':'');el.textContent=d;
+      (function(date,cel){cel.addEventListener('click',function(){reprogDate=date;reprogSlot='';document.querySelectorAll('#rcal-cells .dcel.picked').forEach(function(c){c.classList.remove('picked');});cel.classList.add('picked');renderRslots(date);});})(dt,el);
+    }else{el.className='dcel';el.textContent=d;}
+    grid.appendChild(el);
+  }
+}
+
+function renderRslots(date){
+  var iso=date.getFullYear()+'-'+pad(date.getMonth()+1)+'-'+pad(date.getDate());
+  var taken=(s.taken[iso]||[]).filter(function(sl){var rdv=userRdvs.find(function(r){return r.id===reprogId;});return !(rdv&&rdv.date_rdv===iso&&rdv.slot===sl);});
+  var wrap=document.getElementById('rslots');wrap.innerHTML='';
+  getSlotsForDate(date).forEach(function(lbl){
+    var el=document.createElement('div');
+    if(taken.indexOf(lbl)>-1){el.className='slt taken';el.textContent=lbl+' — pris';}
+    else{el.className='slt'+(reprogSlot===lbl?' on':'');el.textContent=lbl;
+      (function(label,cel){cel.addEventListener('click',function(){reprogSlot=label;document.querySelectorAll('#rslots .slt').forEach(function(sl){sl.classList.remove('on');});cel.classList.add('on');});})(lbl,el);}
+    wrap.appendChild(el);
+  });
+}
+
+/* ---- BOOKING ---- */
+document.getElementById('btn-new-rdv').addEventListener('click',function(){showPage('page-main');setTimeout(function(){jump('sec-booking');},100);});
+
+document.getElementById('btn-s1').addEventListener('click',async function(){
+  if(!s.presta){document.getElementById('e-presta').style.display='block';return;}
+  document.getElementById('e-presta').style.display='none';
+  var now=new Date();s.calY=now.getFullYear();s.calM=now.getMonth();
+  await loadTaken();renderCal();gotoStep(2);
+});
+
+document.querySelectorAll('#pick-row-main .pick').forEach(function(p){
+  p.addEventListener('click',function(){s.presta=p.dataset.p;s.price=parseInt(p.dataset.v);setPick(s.presta);document.getElementById('e-presta').style.display='none';});
+});
+
+document.getElementById('btn-s2-back').addEventListener('click',function(){gotoStep(1);});
+document.getElementById('btn-s2').addEventListener('click',function(){
+  var ok=true;
+  if(!s.date){document.getElementById('e-date').style.display='block';ok=false;}else document.getElementById('e-date').style.display='none';
+  if(!s.slot){document.getElementById('e-slot').style.display='block';ok=false;}else document.getElementById('e-slot').style.display='none';
+  if(!ok)return;
+  var profile=userProfile;
+  setText('r-name',profile&&profile.name?profile.name:'—');
+  setText('r-email',currentUser.user.email);
+  setText('r-phone',profile&&profile.phone?profile.phone:'—');
+  setText('r-presta',s.presta);
+  var dl=s.date.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  setText('r-date',dl.charAt(0).toUpperCase()+dl.slice(1));
+  setText('r-slot',s.slot);setText('r-price',s.price+'€');
+  gotoStep(3);
+});
+
+document.getElementById('btn-s3-back').addEventListener('click',function(){gotoStep(2);});
+document.getElementById('btn-confirm').addEventListener('click',async function(){
+  var btn=this;btn.textContent='Enregistrement...';btn.disabled=true;
+  var iso=dk(s.date);
+  var profile=userProfile;
+  try{
+    var res=await fetch(SUPA_URL+'/rest/v1/reservations',{method:'POST',headers:authH(),body:JSON.stringify({name:profile&&profile.name?profile.name:currentUser.user.email,email:currentUser.user.email,phone:profile&&profile.phone?profile.phone:'',presta:s.presta,price:s.price,date_rdv:iso,slot:s.slot,user_id:currentUser.user.id})});
+    if(!res.ok)throw new Error();
+    fetch('https://kqatwcmcmeezxlskwcmk.supabase.co/functions/v1/notify-sms',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPA_KEY},body:JSON.stringify({name:profile&&profile.name?profile.name:'Client',presta:s.presta,date_rdv:iso,slot:s.slot,phone:profile&&profile.phone?profile.phone:''})}).catch(function(){});
+    document.getElementById('sec-booking').style.display='none';
+    var dl=s.date.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+    setText('success-txt','Votre rendez-vous pour une '+s.presta+' est confirmé le '+dl+' à '+s.slot+'.');
+    document.getElementById('sec-success').classList.add('on');
+    jump('sec-success');
+  }catch(e){alert('Une erreur est survenue.');}
+  btn.textContent='Confirmer le rendez-vous';btn.disabled=false;
+});
+
+document.getElementById('btn-new').addEventListener('click',function(){
+  s.presta='';s.price=0;s.date=null;s.slot='';
+  document.getElementById('sec-booking').style.display='';
+  document.getElementById('sec-success').classList.remove('on');
+  gotoStep(1);jump('sec-hero');
+});
+
+document.getElementById('cal-prev').addEventListener('click',function(){var now=new Date();if(s.calY===now.getFullYear()&&s.calM===now.getMonth())return;s.calM--;if(s.calM<0){s.calM=11;s.calY--;}renderCal();});
+document.getElementById('cal-next').addEventListener('click',function(){s.calM++;if(s.calM>11){s.calM=0;s.calY++;}renderCal();});
+
+function gotoStep(n){
+  [1,2,3].forEach(function(i){document.getElementById('p'+i).classList.toggle('on',i===n);var dot=document.getElementById('dot'+i);dot.classList.remove('active','done');if(i===n)dot.classList.add('active');else if(i<n)dot.classList.add('done');});
+  jump('sec-booking');
+}
+
+function setPick(name){document.querySelectorAll('#pick-row-main .pick').forEach(function(p){p.classList.toggle('on',p.dataset.p===name);});}
+
+function getAvailableDays(y,m){
+  var res=[];var d=new Date(y,m,1);var today=new Date();today.setHours(0,0,0,0);
+  while(d.getMonth()===m){
+    if((d.getDay()===1||d.getDay()===4)&&new Date(y,m,d.getDate())>=today){
+      var iso=y+'-'+pad(m+1)+'-'+pad(d.getDate());
+      if(!isBlocked(iso))res.push(d.getDate());
+    }
+    d.setDate(d.getDate()+1);
+  }
+  return res;
+}
+
+function getSlotsForDate(date){
+  var day=date.getDay();var start=day===4?12:16;var slots=[];
+  for(var h=start;h<=19;h++){slots.push(pad(h)+':00');if(h<19)slots.push(pad(h)+':30');}
+  return slots;
+}
+
+function renderCal(){
+  document.getElementById('cal-lbl').textContent=MFR[s.calM]+' '+s.calY;
+  var nn=document.getElementById('cal-names');nn.innerHTML='';
+  DFR.forEach(function(d){var el=document.createElement('div');el.className='dname';el.textContent=d;nn.appendChild(el);});
+  var avail=getAvailableDays(s.calY,s.calM);
+  var first=new Date(s.calY,s.calM,1).getDay();var off=first===0?6:first-1;
+  var total=new Date(s.calY,s.calM+1,0).getDate();
+  var grid=document.getElementById('cal-cells');grid.innerHTML='';
+  for(var i=0;i<off;i++){var e=document.createElement('div');e.className='dcel';grid.appendChild(e);}
+  for(var d=1;d<=total;d++){
+    var el=document.createElement('div');var dt=new Date(s.calY,s.calM,d);
+    if(avail.indexOf(d)>-1){
+      el.className='dcel avail'+(s.date&&dk(s.date)===dk(dt)?' picked':'');el.textContent=d;
+      (function(date,cel){cel.addEventListener('click',function(){s.date=date;s.slot='';document.querySelectorAll('#cal-cells .dcel.picked').forEach(function(c){c.classList.remove('picked');});cel.classList.add('picked');document.getElementById('e-date').style.display='none';renderSlots(date);});})(dt,el);
+    }else{el.className='dcel';el.textContent=d;}
+    grid.appendChild(el);
+  }
+}
+
+function renderSlots(date){
+  var iso=dk(date);var taken=s.taken[iso]||[];
+  var wrap=document.getElementById('slots');wrap.innerHTML='';
+  getSlotsForDate(date).forEach(function(lbl){
+    var el=document.createElement('div');
+    if(taken.indexOf(lbl)>-1){el.className='slt taken';el.textContent=lbl+' — pris';}
+    else{el.className='slt'+(s.slot===lbl?' on':'');el.textContent=lbl;
+      (function(label,cel){cel.addEventListener('click',function(){s.slot=label;document.querySelectorAll('#slots .slt').forEach(function(sl){sl.classList.remove('on');});cel.classList.add('on');document.getElementById('e-slot').style.display='none';});})(lbl,el);}
+    wrap.appendChild(el);
+  });
+}
+
+function dk(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function pad(n){return n<10?'0'+n:String(n);}
+function setText(id,v){document.getElementById(id).textContent=v;}
+
+/* ---- INIT ---- */
+(async function(){
+  await loadSession();
+  updateNav();
+})();
+</script>
+</body>
+</html>
