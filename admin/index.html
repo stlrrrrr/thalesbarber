@@ -164,6 +164,9 @@ td.td-muted{color:#888}
       <div class="sc"><div class="lbl">Cette semaine</div><div class="val" id="s-week">0</div></div>
       <div class="sc"><div class="lbl">Chiffre d'affaires</div><div class="val"><em id="s-ca">0</em> €</div></div>
     </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:1.5rem">
+      <button class="btn-bar red" id="btn-reset">🗑 Réinitialiser toutes les données</button>
+    </div>
 
     <div class="tabs">
       <button class="tab on" id="tab-list" onclick="switchTab('list')">Rendez-vous</button>
@@ -297,7 +300,18 @@ td.td-muted{color:#888}
   </div>
 </div>
 
-<!-- DELETE INDISPO MODAL -->
+<!-- RESET MODAL -->
+<div class="modal-overlay" id="modal-reset">
+  <div class="modal" style="max-width:400px;text-align:center">
+    <div class="modal-title" style="text-align:center">⚠️ Réinitialisation</div>
+    <p style="font-size:.85rem;color:#666;margin-bottom:.75rem;line-height:1.6">Cette action va supprimer <strong>tous les rendez-vous</strong> et remettre le chiffre d'affaires à zéro.</p>
+    <p style="font-size:.78rem;color:#e74c3c;margin-bottom:1.5rem;font-weight:600">Cette action est irréversible.</p>
+    <div class="modal-actions" style="justify-content:center">
+      <button class="btn-cancel" id="modal-reset-cancel">Annuler</button>
+      <button class="btn-delete-confirm" id="modal-reset-confirm">Tout supprimer</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="modal-del-indispo">
   <div class="modal" style="max-width:380px;text-align:center">
     <div class="modal-title" style="text-align:center">Supprimer la période ?</div>
@@ -333,7 +347,7 @@ var MFR=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Sep
 var PRESTAS={'Coupe':20,'Barbe':5,'Coupe + Barbe':25};
 var sortCol='date',sortDir=1;
 var calY=new Date().getFullYear(),calM=new Date().getMonth();
-var bookings=[],indispos=[];
+var bookings=[],indispos=[],resetDate='2000-01-01';
 var pendingDeleteId=null,pendingDeleteIndId=null;
 var adminPwd=null;
 
@@ -361,7 +375,24 @@ function isBlocked(isoDate){
   return indispos.some(function(ind){return isoDate>=ind.debut&&isoDate<=ind.fin;});
 }
 
-/* LOGIN */
+/* RESET */
+document.getElementById('btn-reset').addEventListener('click',function(){
+  document.getElementById('modal-reset').classList.add('on');
+});
+document.getElementById('modal-reset-cancel').addEventListener('click',function(){
+  document.getElementById('modal-reset').classList.remove('on');
+});
+document.getElementById('modal-reset-confirm').addEventListener('click',async function(){
+  var btn=this;btn.textContent='Réinitialisation...';btn.disabled=true;
+  try{
+    var today=new Date().toISOString().slice(0,10);
+    await fetch(SUPA_URL+'/rest/v1/config?id=eq.reset_date',{method:'PATCH',headers:supaH(),body:JSON.stringify({value:today})});
+    resetDate=today;
+    document.getElementById('modal-reset').classList.remove('on');
+    renderStats();
+  }catch(e){alert('Erreur lors de la réinitialisation.');}
+  btn.textContent='Tout supprimer';btn.disabled=false;
+});
 document.getElementById('btn-login').addEventListener('click',doLogin);
 document.getElementById('pwd').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
 async function doLogin(){
