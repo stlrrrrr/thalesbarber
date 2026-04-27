@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thales — Admin</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Helvetica Neue',Arial,sans-serif;color:#111;background:#f5f5f3}
+
+#login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#111}
+.login-box{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:4px;padding:3rem 2.5rem;width:100%;max-width:360px;text-align:center}
+.login-logo{font-size:1.6rem;font-weight:600;letter-spacing:.2em;color:#fff;text-transform:uppercase;margin-bottom:.3rem}
+.login-logo em{color:#c9a96e;font-style:normal}
+.login-sub{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:#555;margin-bottom:2.2rem}
+.fg{margin-bottom:1.2rem;text-align:left}
+.fg label{display:block;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#666;margin-bottom:.45rem}
+.fg input,.fg select{width:100%;padding:.85rem 1rem;border:1px solid #2a2a2a;border-radius:2px;font-size:.92rem;background:#222;color:#fff;outline:none}
+.fg input:focus,.fg select:focus{border-color:#c9a96e}
+.errtxt{font-size:.72rem;color:#e04;margin-bottom:.8rem;display:none}
+.btn-gold{width:100%;background:#c9a96e;color:#111;border:none;padding:.9rem;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;cursor:pointer;border-radius:2px}
+.btn-gold:hover{background:#b8945a}
+.btn-gold:disabled{opacity:.5;cursor:not-allowed}
+
+#admin-page{display:none;min-height:100vh}
+header{background:#111;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:99}
+.hlogo{font-size:1.1rem;font-weight:600;letter-spacing:.15em;color:#fff;text-transform:uppercase}
+.hlogo em{color:#c9a96e;font-style:normal}
+.htag{font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:#555;margin-left:.75rem}
+.header-actions{display:flex;gap:.75rem;align-items:center}
+.btn-logout{background:none;border:1px solid #333;color:#aaa;padding:.45rem 1rem;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s}
+.btn-logout:hover{border-color:#c9a96e;color:#c9a96e}
+.btn-header-action{background:none;border:1px solid #444;color:#888;padding:.45rem 1rem;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s}
+.btn-header-action:hover{border-color:#fff;color:#fff}
+
+.main{max-width:980px;margin:0 auto;padding:2.5rem 1.5rem}
+
+.tabs{display:flex;margin-bottom:2rem;border:1px solid #e0e0e0;border-radius:2px;overflow:hidden;background:#fff;width:fit-content}
+.tab{padding:.7rem 1.8rem;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:#888;background:#fff;border:none;transition:all .2s}
+.tab:hover{color:#111}
+.tab.on{background:#111;color:#fff}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem}
+.sc{background:#fff;border:1px solid #e0e0e0;border-radius:2px;padding:1.4rem 1.5rem}
+.sc .lbl{font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:#aaa;margin-bottom:.5rem}
+.sc .val{font-size:2.2rem;font-weight:300;color:#111}
+.sc .val em{font-style:normal;color:#c9a96e}
+
+.filter-bar{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;background:#fff;border:1px solid #e0e0e0;border-radius:2px;padding:1rem 1.2rem}
+.filter-bar label{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#888}
+.filter-bar select,.filter-bar input[type=text]{padding:.5rem .85rem;border:1px solid #ddd;border-radius:2px;font-size:.83rem;background:#fff;outline:none;cursor:pointer;color:#111}
+.filter-bar select:focus,.filter-bar input[type=text]:focus{border-color:#111}
+.filter-bar input[type=text]{width:180px}
+.count-tag{margin-left:auto;font-size:.72rem;color:#aaa}
+.btn-bar{background:#111;color:#fff;border:none;padding:.55rem 1.2rem;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;white-space:nowrap;transition:background .2s}
+.btn-bar:hover{background:#333}
+.btn-bar.red{background:#e74c3c}
+.btn-bar.red:hover{background:#c0392b}
+
+.tbl-wrap{background:#fff;border:1px solid #e0e0e0;border-radius:2px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:.84rem;min-width:700px}
+thead tr{background:#111}
+thead th{padding:.85rem 1rem;text-align:left;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#aaa;font-weight:400;white-space:nowrap}
+thead th.sortable{cursor:pointer}
+thead th.sortable:hover{color:#c9a96e}
+thead th.sorted .arrow{color:#c9a96e}
+tbody tr{border-bottom:1px solid #f0f0f0;transition:background .15s}
+tbody tr:hover{background:#fafaf8}
+tbody tr:last-child{border-bottom:none}
+td{padding:.85rem 1rem;color:#333;white-space:nowrap}
+td.td-name{font-weight:500;color:#111}
+td.td-muted{color:#888}
+.badge{display:inline-block;padding:.22rem .75rem;border-radius:2px;font-size:.65rem;letter-spacing:.07em;text-transform:uppercase;font-weight:600}
+.b-coupe{background:#e8f0fe;color:#1a56a0}
+.b-barbe{background:#fef3e2;color:#92560a}
+.b-cb{background:#e8faf0;color:#1a7a46}
+.empty{text-align:center;padding:3.5rem;color:#bbb;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase}
+.btn-del{background:#fef2f2;border:1px solid #e74c3c;color:#e74c3c;font-size:.7rem;padding:.4rem .9rem;border-radius:2px;cursor:pointer;transition:all .2s;font-weight:500}
+.btn-del:hover{background:#e74c3c;color:#fff}
+
+/* INDISPO TABLE */
+.indispo-wrap{background:#fff;border:1px solid #e0e0e0;border-radius:2px;overflow:auto;margin-top:1rem}
+.indispo-badge{background:#fff3cd;color:#856404;display:inline-block;padding:.22rem .75rem;border-radius:2px;font-size:.72rem;font-weight:600}
+
+/* CALENDAR */
+#view-cal{display:none}
+.cal-wrap{background:#fff;border:1px solid #e0e0e0;border-radius:2px;overflow:hidden}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.5rem;border-bottom:1px solid #e0e0e0}
+.cal-header h3{font-size:1rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+.cal-nav-btn{width:34px;height:34px;border:1px solid #ddd;background:#fff;cursor:pointer;border-radius:2px;font-size:1.1rem;line-height:1}
+.cal-nav-btn:hover{background:#111;color:#fff;border-color:#111}
+.cal-grid-head{display:grid;grid-template-columns:repeat(7,1fr);background:#f5f5f3;border-bottom:1px solid #e0e0e0}
+.cal-grid-head div{text-align:center;padding:.6rem;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#999}
+.cal-grid-head div.avail-h{color:#c9a96e;font-weight:600}
+.cal-body{display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid #e8e8e8}
+.cal-cell{min-height:90px;border-right:1px solid #e8e8e8;border-bottom:1px solid #e8e8e8;padding:.5rem}
+.cal-cell.other-month .day-num{color:#ddd}
+.cal-cell.today{background:#fffdf7}
+.cal-cell.avail-day{background:#fafaf8}
+.cal-cell.blocked-day{background:#fff8e1}
+.day-num{font-size:.8rem;font-weight:500;color:#bbb;margin-bottom:.3rem;display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%}
+.cal-cell.in-month .day-num{color:#555}
+.cal-cell.avail-day .day-num{color:#111;font-weight:600}
+.cal-cell.today .day-num{background:#111;color:#fff}
+.cal-cell.blocked-day .day-num{color:#856404}
+.rdv-pill{display:block;font-size:.65rem;padding:.18rem .4rem;border-radius:2px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.rdv-pill.p-coupe{background:#e8f0fe;color:#1a56a0}
+.rdv-pill.p-barbe{background:#fef3e2;color:#92560a}
+.rdv-pill.p-cb{background:#e8faf0;color:#1a7a46}
+.rdv-pill.p-blocked{background:#fff3cd;color:#856404;font-style:italic}
+.more-tag{font-size:.6rem;color:#aaa;margin-top:1px}
+.tooltip{position:fixed;background:#111;color:#fff;border-radius:2px;padding:.6rem .85rem;font-size:.75rem;pointer-events:none;z-index:999;display:none;max-width:220px;line-height:1.5}
+.tooltip em{color:#c9a96e;font-style:normal;display:block;font-weight:600;margin-bottom:.2rem}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.on{display:flex}
+.modal{background:#fff;border-radius:2px;padding:2rem;width:100%;text-align:left}
+.modal-title{font-size:1.1rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid #eee}
+.modal-fg{margin-bottom:1.1rem}
+.modal-fg label{display:block;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#888;margin-bottom:.4rem}
+.modal-fg input,.modal-fg select,.modal-fg textarea{width:100%;padding:.75rem 1rem;border:1px solid #ddd;border-radius:2px;font-size:.9rem;background:#fff;color:#111;outline:none;font-family:inherit}
+.modal-fg textarea{resize:vertical;min-height:80px}
+.modal-fg input:focus,.modal-fg select:focus,.modal-fg textarea:focus{border-color:#111}
+.modal-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.modal-actions{display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.5rem;padding-top:1rem;border-top:1px solid #eee}
+.btn-cancel{background:#fff;border:1px solid #ddd;color:#666;padding:.7rem 1.5rem;font-size:.75rem;cursor:pointer;border-radius:2px}
+.btn-cancel:hover{border-color:#111;color:#111}
+.btn-submit{background:#111;color:#fff;border:none;padding:.7rem 2rem;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-weight:600}
+.btn-submit:hover{background:#333}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed}
+.btn-delete-confirm{background:#e74c3c;border:none;color:#fff;padding:.7rem 1.5rem;font-size:.75rem;cursor:pointer;border-radius:2px;font-weight:600}
+.btn-delete-confirm:hover{background:#c0392b}
+.modal-err{font-size:.72rem;color:#e04;margin-top:.5rem;display:none}
+.pwd-ok{font-size:.75rem;color:#27ae60;margin-top:.5rem;display:none;text-align:center;padding:.5rem;background:#eafaf1;border-radius:2px}
+.input-err{border-color:#e74c3c !important}
+.err-msg{font-size:.72rem;color:#e74c3c;margin-top:.3rem;display:none}
+</style>
+</head>
+<body>
+
+<div id="login-page">
+  <div class="login-box">
+    <div class="login-logo">T<em>H</em>ALES</div>
+    <div class="login-sub">Espace administrateur</div>
+    <div class="fg"><label>Mot de passe</label><input type="password" id="pwd" placeholder="••••••••"></div>
+    <div class="errtxt" id="err-login">Mot de passe incorrect.</div>
+    <button class="btn-gold" id="btn-login">Se connecter</button>
+  </div>
+</div>
+
+<div id="admin-page">
+  <header>
+    <div><span class="hlogo">T<em>H</em>ALES</span><span class="htag">/ Administration</span></div>
+    <div class="header-actions">
+      <button class="btn-header-action" id="btn-open-pwd">🔑 Mot de passe</button>
+      <button class="btn-logout" id="btn-logout">Déconnexion</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="stats">
+      <div class="sc"><div class="lbl">Total rendez-vous</div><div class="val" id="s-total">0</div></div>
+      <div class="sc"><div class="lbl">Cette semaine</div><div class="val" id="s-week">0</div></div>
+      <div class="sc"><div class="lbl">Chiffre d'affaires</div><div class="val"><em id="s-ca">0</em> €</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab on" id="tab-list" onclick="switchTab('list')">Rendez-vous</button>
+      <button class="tab" id="tab-indispo" onclick="switchTab('indispo')">Indisponibilités</button>
+      <button class="tab" id="tab-cal" onclick="switchTab('cal')">Calendrier</button>
+    </div>
+
+    <!-- RDV LIST -->
+    <div id="view-list">
+      <div class="filter-bar">
+        <label>Prestation</label>
+        <select id="f-presta"><option value="">Toutes</option><option value="Coupe">Coupe</option><option value="Barbe">Barbe</option><option value="Coupe + Barbe">Coupe + Barbe</option></select>
+        <label>Recherche</label>
+        <input type="text" id="f-search" placeholder="Nom, email, tél...">
+        <span class="count-tag" id="count-tag"></span>
+        <button class="btn-bar" id="btn-open-add">+ Ajouter un RDV</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th class="sortable sorted" data-col="name">Nom <span class="arrow">▲</span></th>
+            <th>Téléphone</th><th>Email</th>
+            <th class="sortable" data-col="presta">Prestation <span class="arrow">▲</span></th>
+            <th class="sortable" data-col="date">Date <span class="arrow">▲</span></th>
+            <th>Heure</th>
+            <th class="sortable" data-col="price">Montant <span class="arrow">▲</span></th>
+            <th>Action</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- INDISPONIBILITES -->
+    <div id="view-indispo" style="display:none">
+      <div class="filter-bar">
+        <span style="font-size:.8rem;color:#555">Bloquez des journées entières pour les vacances ou absences.</span>
+        <button class="btn-bar" style="margin-left:auto" id="btn-open-indispo">+ Ajouter une période</button>
+      </div>
+      <div class="indispo-wrap">
+        <table>
+          <thead><tr>
+            <th>Motif</th>
+            <th>Date début</th>
+            <th>Date fin</th>
+            <th>Durée</th>
+            <th>Action</th>
+          </tr></thead>
+          <tbody id="indispo-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div id="view-cal" style="display:none">
+      <div class="cal-wrap">
+        <div class="cal-header">
+          <button class="cal-nav-btn" id="cal-prev">&#8249;</button>
+          <h3 id="cal-month-lbl"></h3>
+          <button class="cal-nav-btn" id="cal-next">&#8250;</button>
+        </div>
+        <div class="cal-grid-head">
+          <div class="avail-h">Lun</div><div>Mar</div><div>Mer</div>
+          <div class="avail-h">Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+        </div>
+        <div class="cal-body" id="cal-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE RDV MODAL -->
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal" style="max-width:380px;text-align:center">
+    <div class="modal-title" style="text-align:center">Supprimer le rendez-vous ?</div>
+    <p id="modal-del-txt" style="font-size:.85rem;color:#666;margin-bottom:1.5rem;line-height:1.5"></p>
+    <div class="modal-actions" style="justify-content:center">
+      <button class="btn-cancel" id="modal-del-cancel">Annuler</button>
+      <button class="btn-delete-confirm" id="modal-del-confirm">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD RDV MODAL -->
+<div class="modal-overlay" id="modal-add">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-title">Ajouter un rendez-vous</div>
+    <div class="modal-row">
+      <div class="modal-fg"><label>Nom et prénom *</label><input type="text" id="add-name" placeholder="Jean Dupont"></div>
+      <div class="modal-fg"><label>Téléphone *</label><input type="tel" id="add-phone" placeholder="06 12 34 56 78"></div>
+    </div>
+    <div class="modal-fg"><label>Email</label><input type="email" id="add-email" placeholder="jean@email.com"></div>
+    <div class="modal-row">
+      <div class="modal-fg">
+        <label>Prestation *</label>
+        <select id="add-presta">
+          <option value="">Choisir...</option>
+          <option value="Coupe">Coupe — 20€</option>
+          <option value="Barbe">Barbe — 5€</option>
+          <option value="Coupe + Barbe">Coupe + Barbe — 25€</option>
+        </select>
+      </div>
+      <div class="modal-fg"><label>Date *</label><input type="date" id="add-date"></div>
+    </div>
+    <div class="modal-fg">
+      <label>Créneau *</label>
+      <select id="add-slot"><option value="">Sélectionner une date d'abord</option></select>
+    </div>
+    <div class="modal-err" id="add-err"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modal-add-cancel">Annuler</button>
+      <button class="btn-submit" id="modal-add-confirm">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD INDISPO MODAL -->
+<div class="modal-overlay" id="modal-indispo">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-title">Ajouter une indisponibilité</div>
+    <div class="modal-fg"><label>Motif *</label><input type="text" id="ind-motif" placeholder="Ex : Vacances d'été, Formation..."></div>
+    <div class="modal-row">
+      <div class="modal-fg"><label>Date de début *</label><input type="date" id="ind-debut"></div>
+      <div class="modal-fg"><label>Date de fin *</label><input type="date" id="ind-fin"></div>
+    </div>
+    <div class="modal-err" id="ind-err"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modal-ind-cancel">Annuler</button>
+      <button class="btn-submit" id="modal-ind-confirm">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE INDISPO MODAL -->
+<div class="modal-overlay" id="modal-del-indispo">
+  <div class="modal" style="max-width:380px;text-align:center">
+    <div class="modal-title" style="text-align:center">Supprimer la période ?</div>
+    <p id="modal-ind-del-txt" style="font-size:.85rem;color:#666;margin-bottom:1.5rem;line-height:1.5"></p>
+    <div class="modal-actions" style="justify-content:center">
+      <button class="btn-cancel" id="modal-ind-del-cancel">Annuler</button>
+      <button class="btn-delete-confirm" id="modal-ind-del-confirm">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal-overlay" id="modal-pwd">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">Changer le mot de passe</div>
+    <div class="modal-fg"><label>Mot de passe actuel</label><input type="password" id="pwd-old" placeholder="••••••••"><div class="err-msg" id="pwd-err-old">Mot de passe incorrect.</div></div>
+    <div class="modal-fg"><label>Nouveau mot de passe</label><input type="password" id="pwd-new" placeholder="••••••••"><div class="err-msg" id="pwd-err-new">Minimum 6 caractères.</div></div>
+    <div class="modal-fg"><label>Confirmer</label><input type="password" id="pwd-confirm" placeholder="••••••••"><div class="err-msg" id="pwd-err-confirm">Les mots de passe ne correspondent pas.</div></div>
+    <div class="pwd-ok" id="pwd-ok">✓ Mot de passe modifié avec succès !</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modal-pwd-cancel">Annuler</button>
+      <button class="btn-submit" id="modal-pwd-confirm">Modifier</button>
+    </div>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+var SUPA_URL='https://kqatwcmcmeezxlskwcmk.supabase.co';
+var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXR3Y21jbWVlenhsc2t3Y21rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NjQ1MTQsImV4cCI6MjA5MjM0MDUxNH0.5aaaTTDmXa6qQ8xvlfxNZmt0ThCbcdi9DviZNG95QVo';
+var MFR=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+var PRESTAS={'Coupe':20,'Barbe':5,'Coupe + Barbe':25};
+var sortCol='date',sortDir=1;
+var calY=new Date().getFullYear(),calM=new Date().getMonth();
+var bookings=[],indispos=[];
+var pendingDeleteId=null,pendingDeleteIndId=null;
+var adminPwd=null;
+
+function supaH(){return{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'};}
+
+async function loadAll(){
+  var [r1,r2,r3]=await Promise.all([
+    fetch(SUPA_URL+'/rest/v1/reservations?select=*&order=date_rdv.asc,slot.asc',{headers:supaH()}),
+    fetch(SUPA_URL+'/rest/v1/indisponibilites?select=*&order=date_debut.asc',{headers:supaH()}),
+    fetch(SUPA_URL+'/rest/v1/config?id=eq.admin_pwd&select=value',{headers:supaH()})
+  ]);
+  var rows1=await r1.json(),rows2=await r2.json(),rows3=await r3.json();
+  bookings=Array.isArray(rows1)?rows1.map(function(r){return{id:r.id,name:r.name,email:r.email||'',phone:r.phone,presta:r.presta,price:r.price,dateRaw:r.date_rdv,slot:r.slot};}):[];
+  indispos=Array.isArray(rows2)?rows2.map(function(r){return{id:r.id,motif:r.motif,debut:r.date_debut,fin:r.date_fin};}):[];
+  if(Array.isArray(rows3)&&rows3[0])adminPwd=rows3[0].value;
+}
+
+async function loadPwd(){
+  var res=await fetch(SUPA_URL+'/rest/v1/config?id=eq.admin_pwd&select=value',{headers:supaH()});
+  var rows=await res.json();
+  if(Array.isArray(rows)&&rows[0])adminPwd=rows[0].value;
+}
+
+function isBlocked(isoDate){
+  return indispos.some(function(ind){return isoDate>=ind.debut&&isoDate<=ind.fin;});
+}
+
+/* LOGIN */
+document.getElementById('btn-login').addEventListener('click',doLogin);
+document.getElementById('pwd').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+async function doLogin(){
+  var btn=document.getElementById('btn-login');
+  var inputPwd=document.getElementById('pwd').value;
+  btn.textContent='Vérification...';btn.disabled=true;
+  try{
+    await loadPwd();
+    if(inputPwd===adminPwd){
+      await loadAll();
+      document.getElementById('login-page').style.display='none';
+      document.getElementById('admin-page').style.display='block';
+      renderStats();renderTable();renderIndispo();renderCal();
+    }else{
+      document.getElementById('err-login').style.display='block';
+    }
+  }catch(e){alert('Erreur de connexion.');}
+  btn.textContent='Se connecter';btn.disabled=false;
+}
+document.getElementById('btn-logout').addEventListener('click',function(){
+  document.getElementById('login-page').style.display='flex';
+  document.getElementById('admin-page').style.display='none';
+  document.getElementById('pwd').value='';
+  document.getElementById('err-login').style.display='none';
+});
+
+/* TABS */
+function switchTab(t){
+  ['list','indispo','cal'].forEach(function(k){
+    document.getElementById('tab-'+k).classList.toggle('on',k===t);
+    document.getElementById('view-'+k).style.display=k===t?'block':'none';
+  });
+}
+
+/* STATS */
+function renderStats(){
+  var now=new Date();
+  var wStart=new Date(now);wStart.setDate(now.getDate()-now.getDay()+1);wStart.setHours(0,0,0,0);
+  document.getElementById('s-total').textContent=bookings.length;
+  document.getElementById('s-week').textContent=bookings.filter(function(b){return new Date(b.dateRaw+'T12:00:00')>=wStart;}).length;
+  document.getElementById('s-ca').textContent=bookings.reduce(function(a,b){return a+b.price;},0);
+}
+
+/* RDV TABLE */
+document.getElementById('f-presta').addEventListener('change',renderTable);
+document.getElementById('f-search').addEventListener('input',renderTable);
+document.querySelectorAll('th.sortable').forEach(function(th){
+  th.addEventListener('click',function(){
+    var col=th.dataset.col;
+    if(sortCol===col){sortDir*=-1;}else{sortCol=col;sortDir=1;}
+    document.querySelectorAll('th.sortable').forEach(function(t){t.classList.remove('sorted');t.querySelector('.arrow').textContent='▲';});
+    th.classList.add('sorted');th.querySelector('.arrow').textContent=sortDir===1?'▲':'▼';
+    renderTable();
+  });
+});
+
+function renderTable(){
+  var fp=document.getElementById('f-presta').value;
+  var fs=document.getElementById('f-search').value.trim().toLowerCase();
+  var list=bookings.filter(function(b){
+    if(fp&&b.presta!==fp)return false;
+    if(fs&&!(b.name.toLowerCase().includes(fs)||b.email.toLowerCase().includes(fs)||b.phone.includes(fs)))return false;
+    return true;
+  });
+  list.sort(function(a,b){
+    var av,bv;
+    if(sortCol==='date'){av=a.dateRaw+a.slot;bv=b.dateRaw+b.slot;return sortDir*(av>bv?1:-1);}
+    if(sortCol==='price')return sortDir*(a.price-b.price);
+    av=(sortCol==='name'?a.name:a.presta).toLowerCase();
+    bv=(sortCol==='name'?b.name:b.presta).toLowerCase();
+    return sortDir*av.localeCompare(bv);
+  });
+  document.getElementById('count-tag').textContent=list.length+' rendez-vous';
+  var tbody=document.getElementById('tbody');tbody.innerHTML='';
+  if(!list.length){var tr=document.createElement('tr');var td=document.createElement('td');td.colSpan=8;td.className='empty';td.textContent='Aucun résultat.';tr.appendChild(td);tbody.appendChild(tr);return;}
+  list.forEach(function(b){
+    var tr=document.createElement('tr');
+    var bc=b.presta==='Coupe'?'b-coupe':b.presta==='Barbe'?'b-barbe':'b-cb';
+    var d=new Date(b.dateRaw+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+    tr.innerHTML='<td class="td-name">'+esc(b.name)+'</td><td class="td-muted">'+esc(b.phone)+'</td><td class="td-muted">'+esc(b.email)+'</td>'+
+      '<td><span class="badge '+bc+'">'+esc(b.presta)+'</span></td><td>'+d+'</td><td>'+esc(b.slot)+'</td>'+
+      '<td style="font-weight:500">'+b.price+'€</td>'+
+      '<td><button class="btn-del" data-id="'+b.id+'" data-name="'+esc(b.name)+'" data-date="'+d+'" data-slot="'+esc(b.slot)+'">🗑 Supprimer</button></td>';
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('.btn-del').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      pendingDeleteId=btn.dataset.id;
+      document.getElementById('modal-del-txt').textContent='Supprimer le RDV de '+btn.dataset.name+' le '+btn.dataset.date+' à '+btn.dataset.slot+' ?';
+      document.getElementById('modal-delete').classList.add('on');
+    });
+  });
+}
+
+document.getElementById('modal-del-cancel').addEventListener('click',function(){document.getElementById('modal-delete').classList.remove('on');pendingDeleteId=null;});
+document.getElementById('modal-del-confirm').addEventListener('click',async function(){
+  if(!pendingDeleteId)return;
+  document.getElementById('modal-delete').classList.remove('on');
+  await fetch(SUPA_URL+'/rest/v1/reservations?id=eq.'+pendingDeleteId,{method:'DELETE',headers:supaH()});
+  bookings=bookings.filter(function(b){return b.id!==pendingDeleteId;});
+  pendingDeleteId=null;
+  renderStats();renderTable();renderCal();
+});
+
+/* ADD RDV */
+document.getElementById('btn-open-add').addEventListener('click',function(){
+  ['add-name','add-phone','add-email','add-date'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('add-presta').value='';
+  document.getElementById('add-slot').innerHTML='<option value="">Sélectionner une date d\'abord</option>';
+  document.getElementById('add-err').style.display='none';
+  document.getElementById('modal-add').classList.add('on');
+});
+document.getElementById('modal-add-cancel').addEventListener('click',function(){document.getElementById('modal-add').classList.remove('on');});
+
+document.getElementById('add-date').addEventListener('change',function(){
+  var val=this.value;
+  var slotSel=document.getElementById('add-slot');slotSel.innerHTML='';
+  if(!val){slotSel.innerHTML='<option value="">Sélectionner une date</option>';return;}
+  if(isBlocked(val)){slotSel.innerHTML='<option value="">Jour bloqué (indisponibilité)</option>';return;}
+  var dt=new Date(val+'T12:00:00');var day=dt.getDay();
+  var start=day===4?12:day===1?16:null;
+  if(start===null){slotSel.innerHTML='<option value="">Jour non disponible</option>';return;}
+  var taken=bookings.filter(function(b){return b.dateRaw===val;}).map(function(b){return b.slot;});
+  for(var h=start;h<=19;h++){
+    ['00','30'].forEach(function(m){
+      if(h===19&&m==='30')return;
+      var lbl=pad(h)+':'+m;
+      var opt=document.createElement('option');
+      opt.value=lbl;opt.textContent=lbl+(taken.indexOf(lbl)>-1?' — pris':'');
+      if(taken.indexOf(lbl)>-1)opt.disabled=true;
+      slotSel.appendChild(opt);
+    });
+  }
+});
+
+document.getElementById('modal-add-confirm').addEventListener('click',async function(){
+  var name=document.getElementById('add-name').value.trim();
+  var phone=document.getElementById('add-phone').value.trim();
+  var email=document.getElementById('add-email').value.trim();
+  var presta=document.getElementById('add-presta').value;
+  var date=document.getElementById('add-date').value;
+  var slot=document.getElementById('add-slot').value;
+  var errEl=document.getElementById('add-err');
+  if(!name||!phone||!presta||!date||!slot){errEl.textContent='Veuillez remplir tous les champs obligatoires.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  var btn=document.getElementById('modal-add-confirm');btn.textContent='Enregistrement...';btn.disabled=true;
+  try{
+    var res=await fetch(SUPA_URL+'/rest/v1/reservations',{method:'POST',headers:supaH(),body:JSON.stringify({name:name,phone:phone,email:email,presta:presta,price:PRESTAS[presta],date_rdv:date,slot:slot})});
+    var rows=await res.json();
+    if(Array.isArray(rows)&&rows[0]){var r=rows[0];bookings.push({id:r.id,name:r.name,email:r.email||'',phone:r.phone,presta:r.presta,price:r.price,dateRaw:r.date_rdv,slot:r.slot});bookings.sort(function(a,b){return(a.dateRaw+a.slot).localeCompare(b.dateRaw+b.slot);});}
+    document.getElementById('modal-add').classList.remove('on');
+    renderStats();renderTable();renderCal();
+  }catch(e){errEl.textContent='Erreur lors de l\'enregistrement.';errEl.style.display='block';}
+  btn.textContent='Enregistrer';btn.disabled=false;
+});
+
+/* INDISPONIBILITES */
+document.getElementById('btn-open-indispo').addEventListener('click',function(){
+  ['ind-motif','ind-debut','ind-fin'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('ind-err').style.display='none';
+  document.getElementById('modal-indispo').classList.add('on');
+});
+document.getElementById('modal-ind-cancel').addEventListener('click',function(){document.getElementById('modal-indispo').classList.remove('on');});
+document.getElementById('modal-ind-confirm').addEventListener('click',async function(){
+  var motif=document.getElementById('ind-motif').value.trim();
+  var debut=document.getElementById('ind-debut').value;
+  var fin=document.getElementById('ind-fin').value;
+  var errEl=document.getElementById('ind-err');
+  if(!motif||!debut||!fin){errEl.textContent='Tous les champs sont obligatoires.';errEl.style.display='block';return;}
+  if(fin<debut){errEl.textContent='La date de fin doit être après la date de début.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  var btn=document.getElementById('modal-ind-confirm');btn.textContent='Enregistrement...';btn.disabled=true;
+  try{
+    var res=await fetch(SUPA_URL+'/rest/v1/indisponibilites',{method:'POST',headers:supaH(),body:JSON.stringify({motif:motif,date_debut:debut,date_fin:fin})});
+    var rows=await res.json();
+    if(Array.isArray(rows)&&rows[0]){var r=rows[0];indispos.push({id:r.id,motif:r.motif,debut:r.date_debut,fin:r.date_fin});indispos.sort(function(a,b){return a.debut.localeCompare(b.debut);});}
+    document.getElementById('modal-indispo').classList.remove('on');
+    renderIndispo();renderCal();
+  }catch(e){errEl.textContent='Erreur lors de l\'enregistrement.';errEl.style.display='block';}
+  btn.textContent='Enregistrer';btn.disabled=false;
+});
+
+function renderIndispo(){
+  var tbody=document.getElementById('indispo-tbody');tbody.innerHTML='';
+  if(!indispos.length){
+    var tr=document.createElement('tr');var td=document.createElement('td');td.colSpan=5;td.className='empty';td.textContent='Aucune indisponibilité enregistrée.';tr.appendChild(td);tbody.appendChild(tr);return;
+  }
+  indispos.forEach(function(ind){
+    var tr=document.createElement('tr');
+    var d1=new Date(ind.debut+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+    var d2=new Date(ind.fin+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+    var diff=Math.round((new Date(ind.fin)-new Date(ind.debut))/(1000*60*60*24))+1;
+    tr.innerHTML='<td><span class="indispo-badge">'+esc(ind.motif)+'</span></td><td>'+d1+'</td><td>'+d2+'</td><td>'+diff+' jour'+(diff>1?'s':'')+'</td>'+
+      '<td><button class="btn-del" data-id="'+ind.id+'" data-motif="'+esc(ind.motif)+'">🗑 Supprimer</button></td>';
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('.btn-del').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      pendingDeleteIndId=btn.dataset.id;
+      document.getElementById('modal-ind-del-txt').textContent='Supprimer la période "'+btn.dataset.motif+'" ? Les créneaux seront à nouveau disponibles.';
+      document.getElementById('modal-del-indispo').classList.add('on');
+    });
+  });
+}
+
+document.getElementById('modal-ind-del-cancel').addEventListener('click',function(){document.getElementById('modal-del-indispo').classList.remove('on');pendingDeleteIndId=null;});
+document.getElementById('modal-ind-del-confirm').addEventListener('click',async function(){
+  if(!pendingDeleteIndId)return;
+  document.getElementById('modal-del-indispo').classList.remove('on');
+  await fetch(SUPA_URL+'/rest/v1/indisponibilites?id=eq.'+pendingDeleteIndId,{method:'DELETE',headers:supaH()});
+  indispos=indispos.filter(function(i){return i.id!==pendingDeleteIndId;});
+  pendingDeleteIndId=null;
+  renderIndispo();renderCal();
+});
+
+/* CHANGE PASSWORD */
+document.getElementById('btn-open-pwd').addEventListener('click',function(){
+  ['pwd-old','pwd-new','pwd-confirm'].forEach(function(id){document.getElementById(id).value='';});
+  ['pwd-err-old','pwd-err-new','pwd-err-confirm','pwd-ok'].forEach(function(id){document.getElementById(id).style.display='none';});
+  document.getElementById('modal-pwd').classList.add('on');
+});
+document.getElementById('modal-pwd-cancel').addEventListener('click',function(){document.getElementById('modal-pwd').classList.remove('on');});
+document.getElementById('modal-pwd-confirm').addEventListener('click',async function(){
+  var oldVal=document.getElementById('pwd-old').value;
+  var newVal=document.getElementById('pwd-new').value;
+  var confVal=document.getElementById('pwd-confirm').value;
+  var ok=true;
+  ['pwd-err-old','pwd-err-new','pwd-err-confirm'].forEach(function(id){document.getElementById(id).style.display='none';});
+  if(oldVal!==adminPwd){document.getElementById('pwd-err-old').style.display='block';ok=false;}
+  if(newVal.length<6){document.getElementById('pwd-err-new').style.display='block';ok=false;}
+  if(newVal!==confVal){document.getElementById('pwd-err-confirm').style.display='block';ok=false;}
+  if(!ok)return;
+  var btn=document.getElementById('modal-pwd-confirm');btn.textContent='Enregistrement...';btn.disabled=true;
+  try{
+    await fetch(SUPA_URL+'/rest/v1/config?id=eq.admin_pwd',{method:'PATCH',headers:supaH(),body:JSON.stringify({value:newVal})});
+    adminPwd=newVal;
+    document.getElementById('pwd-ok').style.display='block';
+    setTimeout(function(){document.getElementById('modal-pwd').classList.remove('on');document.getElementById('pwd-ok').style.display='none';},1500);
+  }catch(e){alert('Erreur lors de la sauvegarde.');}
+  btn.textContent='Modifier';btn.disabled=false;
+});
+
+/* CALENDAR */
+document.getElementById('cal-prev').addEventListener('click',function(){calM--;if(calM<0){calM=11;calY--;}renderCal();});
+document.getElementById('cal-next').addEventListener('click',function(){calM++;if(calM>11){calM=0;calY++;}renderCal();});
+function isAvail(d){return d.getDay()===1||d.getDay()===4;}
+function renderCal(){
+  document.getElementById('cal-month-lbl').textContent=MFR[calM]+' '+calY;
+  var body=document.getElementById('cal-body');body.innerHTML='';
+  var first=new Date(calY,calM,1).getDay();
+  var off=first===0?6:first-1;
+  var total=new Date(calY,calM+1,0).getDate();
+  var today=new Date();today.setHours(0,0,0,0);
+  var prevTotal=new Date(calY,calM,0).getDate();
+  var cells=[];
+  for(var i=0;i<off;i++)cells.push({d:prevTotal-off+1+i,cur:false});
+  for(var d=1;d<=total;d++)cells.push({d:d,cur:true});
+  var rem=(7-cells.length%7)%7;
+  for(var j=1;j<=rem;j++)cells.push({d:j,cur:false});
+  cells.forEach(function(c){
+    var el=document.createElement('div');
+    el.className='cal-cell'+(c.cur?' in-month':' other-month');
+    if(c.cur){
+      var dt=new Date(calY,calM,c.d);
+      var isoDate=calY+'-'+pad(calM+1)+'-'+pad(c.d);
+      var blocked=isBlocked(isoDate);
+      if(blocked)el.classList.add('blocked-day');
+      else if(isAvail(dt))el.classList.add('avail-day');
+      if(dt.getTime()===today.getTime())el.classList.add('today');
+      var num=document.createElement('span');num.className='day-num';num.textContent=c.d;el.appendChild(num);
+      if(blocked){
+        var ind=indispos.find(function(i){return isoDate>=i.debut&&isoDate<=i.fin;});
+        var pill=document.createElement('span');
+        pill.className='rdv-pill p-blocked';pill.textContent='🚫 '+esc(ind?ind.motif:'Indisponible');
+        el.appendChild(pill);
+      }else{
+        var dayBkgs=bookings.filter(function(b){return b.dateRaw===isoDate;});
+        dayBkgs.sort(function(a,b){return a.slot.localeCompare(b.slot);});
+        dayBkgs.slice(0,3).forEach(function(b){
+          var pill=document.createElement('span');
+          var pc=b.presta==='Coupe'?'p-coupe':b.presta==='Barbe'?'p-barbe':'p-cb';
+          pill.className='rdv-pill '+pc;pill.textContent=b.slot+' — '+b.name.split(' ')[0];
+          addTooltip(pill,b);el.appendChild(pill);
+        });
+        if(dayBkgs.length>3){var more=document.createElement('div');more.className='more-tag';more.textContent='+'+(dayBkgs.length-3)+' autre(s)';el.appendChild(more);}
+      }
+    }else{
+      var num2=document.createElement('span');num2.className='day-num';num2.textContent=c.d;el.appendChild(num2);
+    }
+    body.appendChild(el);
+  });
+}
+
+var tip=document.getElementById('tooltip');
+function addTooltip(el,b){
+  el.addEventListener('mouseenter',function(e){tip.innerHTML='<em>'+esc(b.name)+'</em>'+esc(b.presta)+' — '+b.price+'€<br>'+esc(b.slot)+' | '+esc(b.phone);tip.style.display='block';moveTip(e);});
+  el.addEventListener('mousemove',moveTip);
+  el.addEventListener('mouseleave',function(){tip.style.display='none';});
+}
+function moveTip(e){tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-10)+'px';}
+function pad(n){return n<10?'0'+n:String(n);}
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+</script>
+</body>
+</html>
