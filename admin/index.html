@@ -559,7 +559,7 @@ document.getElementById('add-date').addEventListener('change',function(){
   if(!val){slotSel.innerHTML='<option value="">Sélectionner une date</option>';return;}
   if(isBlocked(val)){slotSel.innerHTML='<option value="">Jour bloqué (indisponibilité)</option>';return;}
   var dt=new Date(val+'T12:00:00');var day=dt.getDay();
-  var start=14;
+  var start=day===4?14:16;
   var taken=bookings.filter(function(b){return b.dateRaw===val;}).map(function(b){return b.slot;});
   for(var h=start;h<=19;h++){
     ['00','30'].forEach(function(m){
