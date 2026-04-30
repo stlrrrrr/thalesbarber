@@ -75,8 +75,8 @@ td.td-muted{color:#888}
 .b-barbe{background:#fef3e2;color:#92560a}
 .b-cb{background:#e8faf0;color:#1a7a46}
 .empty{text-align:center;padding:3.5rem;color:#bbb;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase}
-.btn-del{background:#fef2f2;border:1px solid #e74c3c;color:#e74c3c;font-size:.7rem;padding:.4rem .9rem;border-radius:2px;cursor:pointer;transition:all .2s;font-weight:500}
-.btn-del:hover{background:#e74c3c;color:#fff}
+.btn-reprog{background:#e8f0fe;border:1px solid #1a56a0;color:#1a56a0;font-size:.7rem;padding:.4rem .9rem;border-radius:2px;cursor:pointer;transition:all .2s;font-weight:500}
+.btn-reprog:hover{background:#1a56a0;color:#fff}
 
 /* INDISPO TABLE */
 .indispo-wrap{background:#fff;border:1px solid #e0e0e0;border-radius:2px;overflow:auto;margin-top:1rem}
@@ -179,8 +179,13 @@ td.td-muted{color:#888}
       <div class="filter-bar">
         <label>Prestation</label>
         <select id="f-presta"><option value="">Toutes</option><option value="Coupe">Coupe</option><option value="Barbe">Barbe</option><option value="Coupe + Barbe">Coupe + Barbe</option></select>
+        <label>Semaine</label>
+        <input type="week" id="f-week" style="padding:.5rem .85rem;border:1px solid #ddd;border-radius:2px;font-size:.83rem;background:#fff;outline:none;color:#111">
+        <label>Jour</label>
+        <input type="date" id="f-day" style="padding:.5rem .85rem;border:1px solid #ddd;border-radius:2px;font-size:.83rem;background:#fff;outline:none;color:#111">
         <label>Recherche</label>
         <input type="text" id="f-search" placeholder="Nom, email, tél...">
+        <button class="btn-cancel" id="btn-reset-filters" style="padding:.5rem 1rem;font-size:.72rem">✕ Réinitialiser</button>
         <span class="count-tag" id="count-tag"></span>
         <button class="btn-bar" id="btn-open-add">+ Ajouter un RDV</button>
       </div>
@@ -343,6 +348,7 @@ td.td-muted{color:#888}
 <script>
 var SUPA_URL='https://kqatwcmcmeezxlskwcmk.supabase.co';
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXR3Y21jbWVlenhsc2t3Y21rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NjQ1MTQsImV4cCI6MjA5MjM0MDUxNH0.5aaaTTDmXa6qQ8xvlfxNZmt0ThCbcdi9DviZNG95QVo';
+var SUPA_SERVICE='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYXR3Y21jbWVlenhsc2t3Y21rIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Njc2NDUxNCwiZXhwIjoyMDkyMzQwNTE0fQ.gpo8PrcQvbd2kE3N_RR-XXHfdBYXjsZiB0nGf29CVa0';
 var MFR=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 var PRESTAS={'Coupe':20,'Barbe':5,'Coupe + Barbe':25};
 var sortCol='date',sortDir=1;
@@ -439,6 +445,21 @@ function renderStats(){
 /* RDV TABLE */
 document.getElementById('f-presta').addEventListener('change',renderTable);
 document.getElementById('f-search').addEventListener('input',renderTable);
+document.getElementById('f-week').addEventListener('change',function(){
+  document.getElementById('f-day').value='';
+  renderTable();
+});
+document.getElementById('f-day').addEventListener('change',function(){
+  document.getElementById('f-week').value='';
+  renderTable();
+});
+document.getElementById('btn-reset-filters').addEventListener('click',function(){
+  document.getElementById('f-presta').value='';
+  document.getElementById('f-search').value='';
+  document.getElementById('f-week').value='';
+  document.getElementById('f-day').value='';
+  renderTable();
+});
 document.querySelectorAll('th.sortable').forEach(function(th){
   th.addEventListener('click',function(){
     var col=th.dataset.col;
@@ -449,12 +470,31 @@ document.querySelectorAll('th.sortable').forEach(function(th){
   });
 });
 
+function getWeekBounds(weekVal){
+  // weekVal format: "2026-W18"
+  var parts=weekVal.split('-W');
+  var year=parseInt(parts[0]),week=parseInt(parts[1]);
+  var jan4=new Date(year,0,4);
+  var startOfWeek=new Date(jan4);
+  startOfWeek.setDate(jan4.getDate()-(jan4.getDay()||7)+1+(week-1)*7);
+  var endOfWeek=new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate()+6);
+  return{
+    start:startOfWeek.toISOString().slice(0,10),
+    end:endOfWeek.toISOString().slice(0,10)
+  };
+}
+
 function renderTable(){
   var fp=document.getElementById('f-presta').value;
   var fs=document.getElementById('f-search').value.trim().toLowerCase();
+  var fw=document.getElementById('f-week').value;
+  var fd=document.getElementById('f-day').value;
   var list=bookings.filter(function(b){
     if(fp&&b.presta!==fp)return false;
     if(fs&&!(b.name.toLowerCase().includes(fs)||b.email.toLowerCase().includes(fs)||b.phone.includes(fs)))return false;
+    if(fd&&b.dateRaw!==fd)return false;
+    if(fw){var bounds=getWeekBounds(fw);if(b.dateRaw<bounds.start||b.dateRaw>bounds.end)return false;}
     return true;
   });
   list.sort(function(a,b){
@@ -475,7 +515,7 @@ function renderTable(){
     tr.innerHTML='<td class="td-name">'+esc(b.name)+'</td><td class="td-muted">'+esc(b.phone)+'</td><td class="td-muted">'+esc(b.email)+'</td>'+
       '<td><span class="badge '+bc+'">'+esc(b.presta)+'</span></td><td>'+d+'</td><td>'+esc(b.slot)+'</td>'+
       '<td style="font-weight:500">'+b.price+'€</td>'+
-      '<td><button class="btn-del" data-id="'+b.id+'" data-name="'+esc(b.name)+'" data-date="'+d+'" data-slot="'+esc(b.slot)+'">🗑 Supprimer</button></td>';
+      '<td style="display:flex;gap:.4rem"><button class="btn-reprog" data-id="'+b.id+'">✏️ Reprog.</button><button class="btn-del" data-id="'+b.id+'" data-name="'+esc(b.name)+'" data-date="'+d+'" data-slot="'+esc(b.slot)+'">🗑 Suppr.</button></td>';
     tbody.appendChild(tr);
   });
   tbody.querySelectorAll('.btn-del').forEach(function(btn){
@@ -485,13 +525,19 @@ function renderTable(){
       document.getElementById('modal-delete').classList.add('on');
     });
   });
+  tbody.querySelectorAll('.btn-reprog').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var b=bookings.find(function(x){return x.id===btn.dataset.id;});
+      if(b)openAdminReprog(b);
+    });
+  });
 }
 
 document.getElementById('modal-del-cancel').addEventListener('click',function(){document.getElementById('modal-delete').classList.remove('on');pendingDeleteId=null;});
 document.getElementById('modal-del-confirm').addEventListener('click',async function(){
   if(!pendingDeleteId)return;
   document.getElementById('modal-delete').classList.remove('on');
-  await fetch(SUPA_URL+'/rest/v1/reservations?id=eq.'+pendingDeleteId,{method:'DELETE',headers:supaH()});
+  await fetch(SUPA_URL+'/rest/v1/reservations?id=eq.'+pendingDeleteId,{method:'DELETE',headers:adminH()});
   bookings=bookings.filter(function(b){return b.id!==pendingDeleteId;});
   pendingDeleteId=null;
   renderStats();renderTable();renderCal();
@@ -513,8 +559,7 @@ document.getElementById('add-date').addEventListener('change',function(){
   if(!val){slotSel.innerHTML='<option value="">Sélectionner une date</option>';return;}
   if(isBlocked(val)){slotSel.innerHTML='<option value="">Jour bloqué (indisponibilité)</option>';return;}
   var dt=new Date(val+'T12:00:00');var day=dt.getDay();
-  var start=day===4?12:day===1?16:null;
-  if(start===null){slotSel.innerHTML='<option value="">Jour non disponible</option>';return;}
+  var start=14;
   var taken=bookings.filter(function(b){return b.dateRaw===val;}).map(function(b){return b.slot;});
   for(var h=start;h<=19;h++){
     ['00','30'].forEach(function(m){
@@ -540,7 +585,7 @@ document.getElementById('modal-add-confirm').addEventListener('click',async func
   errEl.style.display='none';
   var btn=document.getElementById('modal-add-confirm');btn.textContent='Enregistrement...';btn.disabled=true;
   try{
-    var res=await fetch(SUPA_URL+'/rest/v1/reservations',{method:'POST',headers:supaH(),body:JSON.stringify({name:name,phone:phone,email:email,presta:presta,price:PRESTAS[presta],date_rdv:date,slot:slot})});
+    var res=await fetch(SUPA_URL+'/rest/v1/reservations',{method:'POST',headers:adminH(),body:JSON.stringify({name:name,phone:phone,email:email,presta:presta,price:PRESTAS[presta],date_rdv:date,slot:slot})});
     var rows=await res.json();
     if(Array.isArray(rows)&&rows[0]){var r=rows[0];bookings.push({id:r.id,name:r.name,email:r.email||'',phone:r.phone,presta:r.presta,price:r.price,dateRaw:r.date_rdv,slot:r.slot});bookings.sort(function(a,b){return(a.dateRaw+a.slot).localeCompare(b.dateRaw+b.slot);});}
     document.getElementById('modal-add').classList.remove('on');
