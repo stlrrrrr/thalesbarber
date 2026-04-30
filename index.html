@@ -863,8 +863,11 @@ function getAvailableDays(y,m){
 }
 
 function getSlotsForDate(date){
-  var day=date.getDay();var start=day===4?12:16;var slots=[];
-  for(var h=start;h<=19;h++){slots.push(pad(h)+':00');if(h<19)slots.push(pad(h)+':30');}
+  var slots=[];
+  for(var h=14;h<=19;h++){
+    slots.push(pad(h)+':00');
+    if(h<19)slots.push(pad(h)+':30');
+  }
   return slots;
 }
 
