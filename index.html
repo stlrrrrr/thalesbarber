@@ -864,8 +864,10 @@ function getAvailableDays(y,m){
 
 function getSlotsForDate(date){
   var slots=[];
-  var start=date.getDay()===4?14:16;
+  var isThursday=date.getDay()===4;
+  var start=isThursday?12:16;
   for(var h=start;h<=19;h++){
+    if(h===13)continue; // pause 13h-14h
     slots.push(pad(h)+':00');
     if(h<19)slots.push(pad(h)+':30');
   }
